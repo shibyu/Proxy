@@ -1,0 +1,4 @@
+bufferSize:int:65536
+Host:string:127.0.0.1
+Timeout:int:16
+Cleanup:int:600000

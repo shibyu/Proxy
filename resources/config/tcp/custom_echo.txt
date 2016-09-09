@@ -1,0 +1,9 @@
+ListenPort:int:8020
+RequestInputType:string:binary
+ResponseOutputType:string:binary
+Host:string:loopback
+Enable:bool:true
+HeaderSize:int:8
+LengthOffset:int:4
+LengthType:string:int32
+

@@ -1,0 +1,12 @@
+ListenPort:int:15056
+Enable:bool:true
+EnableRequestSlave:bool:true
+EnableResponseSlave:bool:true
+RequestSlavePort:int:25056
+ResponseSlavePort:int:35056
+
+Host:string:127.0.0.1
+HostPort:int:5056
+
+OriginalFormat:string:PhotonUdp
+ProxyFormat:string:JSON

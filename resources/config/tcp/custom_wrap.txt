@@ -1,0 +1,11 @@
+ListenPort:int:8018
+RequestInputType:string:binary
+RequestOutputType:string:httprequest
+ResponseInputType:string:http
+ResponseOutputType:string:binary
+Host:string:127.0.0.1
+HostPort:int:8081
+Enable:bool:true
+HeaderSize:int:8
+LengthOffset:int:4
+LengthType:string:int32

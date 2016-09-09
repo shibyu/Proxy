@@ -1,0 +1,13 @@
+ListenPort:int:8030
+Enable:bool:true
+EnableRequestSlave:bool:true
+EnableResponseSlave:bool:true
+RequestSlavePort:int:8031
+ResponseSlavePort:int:8032
+
+Host:string:127.0.0.1
+HostPort:int:8020
+
+HeaderSize:int:8
+LengthOffset:int:4
+LengthType:string:int32

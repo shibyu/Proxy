@@ -1,0 +1,5 @@
+MaximumTasks:int:64
+OutputLevel:int:0
+Host:string:192.168.11.12
+Timeout:int:16
+Deny:csv:192.168.11.1

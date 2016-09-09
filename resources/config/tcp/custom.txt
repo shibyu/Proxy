@@ -1,0 +1,4 @@
+test:bool:true
+wrap:bool:true
+unwrap:bool:true
+echo:bool:true

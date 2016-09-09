@@ -1,0 +1,10 @@
+ListenPort:int:8021
+Enable:bool:true
+HeaderSize:int:8
+LengthOffset:int:4
+LengthType:string:int32
+BufferSize:int:1024
+#[0:4) reserved, [4, 8) size, [8, 8+size) content (ASCII);
+Host:string:loopback
+RequestInputType:string:binary
+ResponseOutputType:string:binary

@@ -1,0 +1,3 @@
+Enable:bool:true
+bufferSize:int:65536
+portmap:map:45055=>5055

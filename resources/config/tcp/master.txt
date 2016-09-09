@@ -1,0 +1,3 @@
+test:bool:true
+photon_game:bool:true
+photon_master:bool:true

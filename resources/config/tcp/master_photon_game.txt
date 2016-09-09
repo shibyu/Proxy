@@ -1,0 +1,13 @@
+ListenPort:int:14531
+Enable:bool:true
+EnableRequestSlave:bool:true
+EnableResponseSlave:bool:true
+RequestSlavePort:int:24531
+ResponseSlavePort:int:34531
+
+Host:string:127.0.0.1
+HostPort:int:4531
+
+Rule:string:Photon
+OriginalFormat:string:Photon
+ProxyFormat:string:JSON
