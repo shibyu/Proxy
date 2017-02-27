@@ -3,8 +3,7 @@ package channels;
 import static base.Config.*;
 import static base.LogManager.*;
 
-import base.SocketManager;
-import base.TaskPool;
+import base.*;
 import tasks.Task;
 import util.Host;
 import util.Parser;
@@ -28,13 +27,17 @@ abstract public class TcpChannel {
 	public String getCategory() {
 		return category;
 	}
+	
+	protected Config getConfig() {
+		return tcpConfig;
+	}
 
 	public int getPort() {
-		return tcpConfig.getPort( getCategory() );
+		return getConfig().getPort( getCategory() );
 	} 
 	
 	public final boolean register(Selector selector) {
-		if( tcpConfig.isEnable( getCategory() ) == false ) { return false; }
+		if( getConfig().isEnable( getCategory() ) == false ) { return false; }
 		try {
 			listenChannel = ServerSocketChannel.open();
 			listenChannel.configureBlocking(false);

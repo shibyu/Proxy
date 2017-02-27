@@ -3,8 +3,7 @@ package tasks;
 import static base.Config.*;
 import static base.LogManager.*;
 
-import base.SocketManager;
-import base.TaskPool;
+import base.*;
 import pipes.Pipe;
 
 import java.nio.channels.SocketChannel;
@@ -23,6 +22,14 @@ public abstract class Task extends Thread {
 	protected int bufferSize;
 	
 	public Task(SocketChannel clientConnection, String category) throws IOException {
+		this(clientConnection, category, false);
+	}
+	
+	// 基本的に Task は TCP でしか作らないので TCP の設定を見れば良かったのだが、UDP を wrap し始めたので、設定が混在している;
+	// そのフラグ管理が SlaveTask では必要なのだが、先にこちらのインスタンスが作られてしまうため、そのフラグに綺麗にアクセスできない;
+	// ということで、設定に関する部分をスキップできるようにフラグを導入した...;
+	// TODO: 明らかにひどい実装なので、そのうち見直したい...;
+	public Task(SocketChannel clientConnection, String category, boolean skipSetBufferSize) throws IOException {
 		this.clientConnection = clientConnection;
 		// time out の指定は必須;
 		clientConnection.socket().setSoTimeout(tcpConfig.getTimeout());
@@ -30,11 +37,17 @@ public abstract class Task extends Thread {
 		clientInput = clientConnection.socket().getInputStream();
 		clientOutput = clientConnection.socket().getOutputStream();
 		this.category = category;
-		setBufferSize(category);
+		if( skipSetBufferSize == false ) {
+			setBufferSize(category);
+		}
+	}
+	
+	protected Config getConfig() {
+		return tcpConfig;
 	}
 	
 	protected void setBufferSize(String category) {
-		bufferSize = tcpConfig.getBufferSize(category);
+		bufferSize = getConfig().getBufferSize(category);
 	}
 	
 	public void finish() {

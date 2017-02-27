@@ -19,6 +19,7 @@ public class Config {
 	public static final String CATEGORY_BASE = "base";
 	public static final String CATEGORY_ECHO = "echo";
 	public static final String CATEGORY_HTTP = "http";
+	public static final String CATEGORY_HTTP_ECHO = "httpecho";
 	public static final String CATEGORY_PORTMAP = "portmap";
 	public static final String CATEGORY_ADMIN = "admin";
 	public static final String CATEGORY_PROXY = "proxy";
@@ -86,7 +87,8 @@ public class Config {
 				// switch している部分はさすがにどうしようもなさそう;
 				if( line.startsWith("#") ) { continue; }
 				// key:type:value;
-				String parts[] = line.split(":");
+				// value の中に : を入れられるようにしたいので、3個までしか切らない;
+				String parts[] = line.split(":", 3);
 				if( parts.length != 3 ) { continue; }
 				if( parts[1].equalsIgnoreCase("int") ) {
 					core.put(parts[0], Parser.parseInt(parts[2]));

@@ -21,17 +21,21 @@ public class UdpListenerManager extends Thread {
 		listeners.add(listener);
 	}
 	
-	synchronized public void cleanup() {
+	synchronized public int cleanup() {
+		int cleanupCount = 0;
 		for( UdpListener listener : listeners ) {
-			listener.cleanup();
+			cleanupCount += listener.cleanup();
 		}
+		return cleanupCount;
 	}
 	
 	@Override
 	public void run() {
 		while( true ) {
-			trace("cleanup udp connections");
-			cleanup();
+			int cleanupCount = cleanup();
+			if( cleanupCount > 0 ) {
+				trace("cleanup " + cleanupCount + " udp connections");
+			}
 			try {
 				sleep(udpConfig.getIntProperty(KEY_CLEANUP));
 			}

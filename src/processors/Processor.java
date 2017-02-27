@@ -15,7 +15,7 @@ abstract public class Processor {
 	
 	protected Queue<Content> contents;
 
-	private int bufferSize;
+	protected int bufferSize;
 	
 	protected byte innerBuffer[];
 	protected int innerPointer;
@@ -62,7 +62,7 @@ abstract public class Processor {
 		return contents.size() > 0;
 	}
 
-	public Content getContent() {
+	public Content pullContent() {
 		try {
 			return contents.remove();
 		}

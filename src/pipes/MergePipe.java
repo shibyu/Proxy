@@ -12,7 +12,6 @@ import contents.DataConverter;
 import exceptions.ImplementationException;
 import formatters.*;
 import processors.*;
-import rules.CustomRule;
 import tasks.*;
 import datagram.*;
 
@@ -21,15 +20,13 @@ public class MergePipe extends Pipe {
 	private int type;
 
 	private HttpProcessor processor;
-	private Formatter formatter;
 	private TaskPool pool;
 	
 	private DataConverter converter;
 	
-	public MergePipe(Task owner, InputStream input, OutputStream output, int bufferSize, int type, CustomRule rule, TaskPool pool, DataConverter converter) {
+	public MergePipe(Task owner, InputStream input, OutputStream output, int bufferSize, int type, TaskPool pool, DataConverter converter) {
 		super(owner, input, output, bufferSize);
 		processor = new HttpProcessor(bufferSize);
-		formatter = new BinaryFormatter(rule);
 		this.type = type;
 		this.pool = pool;
 		this.converter = converter;
@@ -41,9 +38,8 @@ public class MergePipe extends Pipe {
 		processor.process(buffer, length);
 		while( processor.hasMoreContent() ) {
 			++contentId;
-			Content content = processor.getContent();
+			Content content = processor.pullContent();
 			if( converter != null ) { content = converter.convert(content); }
-			formatter.setContent( content );
 			int masterTaskId = processor.getTaskId();
 			boolean result;
 			// UDP の場合は listener id が負数で入ってくる;
@@ -51,7 +47,8 @@ public class MergePipe extends Pipe {
 				result = processListener(content);
 			}
 			else {
-				result = processMaster(masterTaskId);
+				output("converted: " + util.Util.toHexString(content.getBytes()), LOG_RAW_DATA);
+				result = processMaster(masterTaskId, content);
 			}
 			String message = result ? "successfully pushed this request" : "failed to push this request";
 			HttpResponseFormatter response = new HttpResponseFormatter();
@@ -88,10 +85,10 @@ public class MergePipe extends Pipe {
 		return true;
 	}
 	
-	private boolean processMaster(int masterTaskId) throws IOException {
+	private boolean processMaster(int masterTaskId, Content content) throws IOException {
 		recordMaster(masterTaskId);
-		MasterTask master = getMasterTask( masterTaskId );
-		return push(master);
+		SlaveAttachableTask master = getMasterTask( masterTaskId );
+		return push(master, content);
 	}
 	
 	private void recordMaster(int masterTaskId) {
@@ -100,22 +97,30 @@ public class MergePipe extends Pipe {
 		((SlaveTask)(owner)).recordMaster(masterTaskId);
 	}
 	
-	private boolean push(MasterTask master) {
+	private boolean push(SlaveAttachableTask master, Content content) {
 		if( master == null ) { return false; }
+		Pipe pipe = null;
 		switch( type ) {
 		case SlaveChannel.TYPE_REQUEST_SLAVE:
-			return master.getRequestPipe().push(formatter);
+			pipe = master.getRequestPipe();
+			break;
 		case SlaveChannel.TYPE_RESPONSE_SLAVE:
-			return master.getResponsePipe().push(formatter);
+			pipe = master.getResponsePipe();
+			break;
 		default:
 			throw new ImplementationException("unknown slave type: " + type);
 		}
+		if( pipe == null || (pipe instanceof PushablePipe) == false ) {
+			// TODO: push する Pipe がないので例外を投げてしまっても良いのかも？;
+			return false;
+		}
+		return ((PushablePipe)(pipe)).push(content);
 	}
 	
-	private MasterTask getMasterTask(int taskId) {
+	private SlaveAttachableTask getMasterTask(int taskId) {
 		Task task = pool.getTask(taskId);
-		if( task == null || (task instanceof MasterTask) == false ) { return null; }
-		return (MasterTask)(task);
+		if( task == null || (task instanceof SlaveAttachableTask) == false ) { return null; }
+		return (SlaveAttachableTask)(task);
 	}
 
 }

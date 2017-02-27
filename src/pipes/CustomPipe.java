@@ -55,7 +55,7 @@ public class CustomPipe extends Pipe {
 		processor.process(buffer, length);
 		while( processor.hasMoreContent() ) {
 			++contentId;
-			formatter.setContent( processor.getContent() );
+			formatter.setContent( processor.pullContent() );
 			formatter.outputBytes(output);
 			output.flush();
 		}

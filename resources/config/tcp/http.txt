@@ -1,3 +1,11 @@
-ListenPort:int:8080
-BufferSize:int:1024
-Enable:bool:true
+ListenPort:int:80
+BufferSize:int:8192
+#Enable:bool:true
+Enable:bool:false
+
+EnableRequestSlave:bool:false
+EnableResponseSlave:bool:false
+#EnableRequestSlave:bool:true
+#EnableResponseSlave:bool:true
+RequestSlavePort:int:8881
+ResponseSlavePort:int:8882

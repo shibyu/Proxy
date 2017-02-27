@@ -2,6 +2,11 @@ package util;
 
 public class DataIO {
 
+	public static void writeInt64(byte buffer[], int offset, long value) {
+		writeInt(buffer, offset, 4, (int)((value >> 32) & 0xFFFFFFFF));
+		writeInt(buffer, offset + 4, 4, (int)(value & 0xFFFFFFFF));
+	}
+	
 	public static void writeInt32(byte buffer[], int offset, int value) {
 		writeInt(buffer, offset, 4, value);
 	}
@@ -30,6 +35,18 @@ public class DataIO {
 			buffer[offset + i] = (byte)(value & 0xFF);
 			value >>= 8;
 		}
+	}
+	
+	public static void writeFloat(byte buffer[], int offset, float value) {
+		writeInt32(buffer, offset, Float.floatToRawIntBits(value));
+	}
+	
+	public static void writeDouble(byte buffer[], int offset, double value) {
+		writeInt64(buffer, offset, Double.doubleToRawLongBits(value));
+	}
+	
+	public static long readInt64(byte buffer[], int offset) {
+		return (((long)(readInt(buffer, offset, 4))) << 32L) | readInt(buffer, offset + 4, 4);
 	}
 	
 	public static int readInt32(byte buffer[], int offset) {
@@ -64,6 +81,14 @@ public class DataIO {
 			result += buffer[offset + i] & 0xFF;
 		}
 		return result;
+	}
+	
+	public static float readFloat(byte buffer[], int offset) {
+		return Float.intBitsToFloat(readInt32(buffer, offset));
+	}
+	
+	public static double readDouble(byte buffer[], int offset) {
+		return Double.longBitsToDouble(readInt64(buffer, offset));
 	}
 
 }

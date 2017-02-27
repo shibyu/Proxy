@@ -6,7 +6,7 @@ import contents.Content;
 import contents.IntermediateObject;
 import rules.*;
 
-public class PhotonUdpSerializer implements Serializer {
+public class PhotonUdpSerializer extends Serializer {
 	
 	private PhotonUdpRule rule;
 	private int bufferSize;
@@ -17,7 +17,7 @@ public class PhotonUdpSerializer implements Serializer {
 	}
 
 	@Override
-	public Content serialize(IntermediateObject object) {
+	public Content execute(IntermediateObject object) {
 		byte buffer[] = new byte[bufferSize];
 		rule.setUserId(buffer, object.getInt(KEY_USER_ID));
 		rule.setPacketToken(buffer, object.getInt(KEY_PACKET_TOKEN));

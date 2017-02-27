@@ -23,12 +23,14 @@ import datagram.*;
 // input を外部サービス (Fiddler を想定) に転送し、結果を別 Task から push してもらうことを想定したタスク;
 // Queue を経由させようとすると、スレッドを新規に立てないといけないので、既にあるスレッド (Task) から実行する感じで;
 
-public class DelegatePipe extends Pipe {
+public class DelegatePipe extends Pipe implements PushablePipe {
 	
 	private Socket proxyConnection;
 
 	private Processor processor;
 	private HttpRequestFormatter formatter;
+	
+	private BinaryFormatter binaryFormatter;
 	
 	private int type;
 	private DataConverter converter;
@@ -49,6 +51,7 @@ public class DelegatePipe extends Pipe {
 		formatter = new HttpRequestFormatter( new Host(config.getHost(), config.getSlavePort(category, type)) );
 		formatter.setupSlaveOption(owner.getTaskId(), type);
 		converter = config.getRequestDataConverter(category);
+		binaryFormatter = new BinaryFormatter(RuleFactory.getRule(category, true));
 	}
 	
 	// request を proxy に転送するが UDP では connection がないので content を直接操作する;
@@ -64,11 +67,14 @@ public class DelegatePipe extends Pipe {
 		this.converter = converter;
 	}
 	
-	// slave (複数存在する可能性がある) からリクエストを転送する;
+	// slave からリクエストを転送する;
+	// slave が複数存在する可能性があるので、synchronized をつけておく (slave が unique であればいらないはず); 
 	// TODO: ここで問題が起きても直接どうこうすることはできないので、間接的に Task に終了を促す必要がある;
-	synchronized public boolean push(Formatter formatter) {
+	@Override
+	synchronized public boolean push(Content content) {
 		try {
-			formatter.outputBytes(output);
+			binaryFormatter.setContent(content);
+			binaryFormatter.outputBytes(output);
 			output.flush();
 			return true;
 		}
@@ -119,22 +125,29 @@ public class DelegatePipe extends Pipe {
 		output("read " + Constant.getTypeString(type) + " " + length + " bytes @ " + owner, -1);
 		processor.process(buffer, length);
 		while( processor.hasMoreContent() ) {
-			processContent( processor.getContent() );
+			processContent( processor.pullContent(), false );
 		}
 	}
 	
-	synchronized public void processContent(Content content, String client, int type) throws IOException {
+	synchronized public boolean processContent(Content content, String client, int type, boolean ignoreRUDP) throws IOException {
 		this.type = type;
 		//　元が TCP ではないので TaskId を指定せずに別処理に持っていくことにする;
 		formatter.setupSlaveOption(-listener.getListenerId(), type);
 		formatter.addHeader("OriginalClient", client);
 		formatter.addHeader("UdpListener", Integer.toString(listener.getListenerId()));
-		processContent(content);
+		return processContent(content, ignoreRUDP);
 	}
 	
-	private void processContent(Content content) throws IOException {
+	private boolean processContent(Content content, boolean ignoreRUDP) throws IOException {
+		output("original: " + util.Util.toHexString(content.getBytes()), LOG_RAW_DATA);
 		++contentId;
-		if( converter != null ) { content = converter.convert(content); }
+		if( converter != null ) {
+			content = converter.convert(content);
+			// RUDP 関連の制御パケットのみであれば、proxy には転送しない;
+			if( ignoreRUDP && content.isRUDPOnly() ) {
+				return false;
+			}
+		}
 		formatter.setContent( content );
 		formatter.addHeader( "ContentId", String.valueOf(contentId) );
 		proxyConnect();
@@ -143,6 +156,7 @@ public class DelegatePipe extends Pipe {
 		proxyOutput.flush();
 		proxyDisconnect();
 		output("push " + Constant.getTypeString(type) + "#" + contentId + " content to proxy @ " + owner, -1);
+		return true;
 	}
 	
 	@Override

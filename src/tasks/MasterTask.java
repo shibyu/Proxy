@@ -1,6 +1,5 @@
 package tasks;
 
-import static base.Config.*;
 import static base.LogManager.*;
 import static base.Constant.*;
 
@@ -12,39 +11,10 @@ import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
 
-public class MasterTask extends Task {
+public class MasterTask extends SlaveAttachableTask {
 	
-	private Pipe requestPipe;
-	private Pipe responsePipe;
-
 	public MasterTask(SocketChannel clientConnection, String category) throws IOException {
 		super(clientConnection, category);
-	}
-	
-	private void setRequestPipe(Pipe pipe) {
-		requestPipe = pipe;
-	}
-	
-	private void setResponsePipe(Pipe pipe) {
-		responsePipe = pipe;
-	}
-	
-	public DelegatePipe getRequestPipe() {
-		if( requestPipe == null || (requestPipe instanceof DelegatePipe) == false ) { return null; }
-		return (DelegatePipe)(requestPipe);
-	}
-	
-	public DelegatePipe getResponsePipe() {
-		if( responsePipe == null || (responsePipe instanceof DelegatePipe) == false ) { return null; }
-		return (DelegatePipe)(responsePipe);
-	}
-	
-	private boolean hasRequestSlave() {
-		return tcpConfig.isEnableRequestSlaveCategory(category);
-	}
-	
-	private boolean hasResponseSlave() {
-		return tcpConfig.isEnableResponseSlaveCategory(category);
 	}
 	
 	@Override
@@ -105,20 +75,4 @@ public class MasterTask extends Task {
 		return status.toString();
 	}
 	
-	private void startAll() {
-		if( requestPipe != null ) { requestPipe.start(); }
-		if( responsePipe != null ) { responsePipe.start(); }
-	}
-	
-	private void joinAll() throws InterruptedException {
-		if( requestPipe != null ) { requestPipe.join(); }
-		if( responsePipe != null ) { responsePipe.join(); }
-	}
-	
-	public void terminate() {
-		output("terminate @ " + this, LOG_TASK);
-		terminate(requestPipe);
-		terminate(responsePipe);
-	}
-
 }

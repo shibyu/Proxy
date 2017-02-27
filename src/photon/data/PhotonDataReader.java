@@ -33,6 +33,24 @@ public class PhotonDataReader {
 		return result;
 	}
 	
+	private long readInt64() {
+		long result = DataIO.readInt64(data, pointer);
+		pointer += 8;
+		return result;
+	}
+	
+	private float readFloat() {
+		float result = DataIO.readFloat(data, pointer);
+		pointer += 4;
+		return result;
+	}
+	
+	private double readDouble() {
+		double result = DataIO.readDouble(data, pointer);
+		pointer += 8;
+		return result;
+	}
+	
 	private String readString() {
 		int length = readInt16();
 		String result = new String(data, pointer, length);
@@ -45,14 +63,27 @@ public class PhotonDataReader {
 		return result != 0;
 	}
 	
-	private Object readArray() {
+	private Object readByteArray() {
+		int length = readInt32();
+		String result = Util.toHexString(data, pointer, length);
+		pointer += length;
+		return PREFIX_BYTE_VALUE + result;
+	}
+
+	// JSON などでは型情報がロストしてしまうので、配列の先頭に型情報を残しておく;
+	// 結果的に全部 Object 配列になる;
+	private Object[] readArray() {
 		int length = readInt16();
 		int type = readByte();
 		switch( type ) {
+		case TYPE_LONG:
+			return readLongArray(length);
 		case TYPE_INT:
 			return readIntArray(length);
 		case TYPE_STRING:
 			return readStringArray(length);
+		case TYPE_BOOLEAN:
+			return readBooleanArray(length);
 		default:
 			throw new ImplementationException("not implemented array type: " + type);
 		}
@@ -60,27 +91,57 @@ public class PhotonDataReader {
 	
 	private Object[] readObjectArray() {
 		int length = readInt16();
-		Object result[] = new Object[length];
+		Object result[] = new Object[length + 1];
+		result[0] = ARRAY_TYPE_OBJECT;
 		for( int i = 0; i < length; ++i ) {
-			result[i] = readObject();
+			result[i + 1] = readObject();
 		}
 		return result;
 	}
 	
-	private int[] readIntArray(int length) {
-		int result[] = new int[length];
+	private Object[] readLongArray(int length) {
+		Object result[] = new Object[length + 1];
+		result[0] = ARRAY_TYPE_LONG;
 		for( int i = 0; i < length; ++i ) {
-			result[i] = readInt32();
+			result[i + 1] = readInt64();
 		}
 		return result;
 	}
 	
-	private String[] readStringArray(int length) {
-		String result[] = new String[length];
+	private Object[] readIntArray(int length) {
+		Object result[] = new Object[length + 1];
+		result[0] = ARRAY_TYPE_INT;
 		for( int i = 0; i < length; ++i ) {
-			result[i] = readString();
+			result[i + 1] = readInt32();
 		}
 		return result;
+	}
+	
+	private Object[] readStringArray(int length) {
+		Object result[] = new Object[length + 1];
+		result[0] = ARRAY_TYPE_STRING;
+		for( int i = 0; i < length; ++i ) {
+			result[i + 1] = readString();
+		}
+		return result;
+	}
+	
+	private Object[] readBooleanArray(int length) {
+		Object result[] = new Object[length + 1];
+		result[0] = ARRAY_TYPE_BOOL;
+		for( int i = 0; i < length; ++i ) {
+			result[i + 1] = readBoolean();
+		}
+		return result;
+	}
+	
+	private String readCustom() {
+		String type = Util.toHexString(data, pointer, 1);
+		++pointer;
+		int length = readInt16();
+		String result = Util.toHexString(data, pointer, length);
+		pointer += length;
+		return PREFIX_CUSTOM_VALUE + type + "_" + result;
 	}
 	
 	private byte readByte() {
@@ -137,18 +198,28 @@ public class PhotonDataReader {
 			// ここで byte を返してしまっても良いのだが、結局 byte 型であることを残さないといけないので、ByteKey にしてしまう;
 			return createByteKey();
 			// return readByte();
+		case TYPE_LONG:
+			return readInt64();
 		case TYPE_INT:
 			return readInt32();
+		case TYPE_FLOAT:
+			return readFloat();
+		case TYPE_DOUBLE:
+			return readDouble();
 		case TYPE_STRING:
 			return readString();
 		case TYPE_BOOLEAN:
 			return readBoolean();
+		case TYPE_BYTE_ARRAY:
+			return readByteArray();
 		case TYPE_ARRAY:
 			return readArray();
 		case TYPE_MAP:
 			return readMap();
 		case TYPE_OBJECT_ARRAY:
 			return readObjectArray();
+		case TYPE_CUSTOM:
+			return readCustom();
 		case TYPE_NULL:
 			return null;
 		default:
@@ -164,9 +235,12 @@ public class PhotonDataReader {
 			return createByteKey();
 		case TYPE_STRING:
 			return readString();
+		case TYPE_LONG:
+			return createLongKey();
 		case TYPE_INT:
 			return createIntKey();
 		default:
+			trace("error @ " + pointer + "\n" + Util.toHexString(data));
 			throw new ImplementationException("not implemented key type: " + type);	
 		}
 	}
@@ -174,6 +248,11 @@ public class PhotonDataReader {
 	private String createByteKey() {
 		byte key = readByte();
 		return PREFIX_BYTE_KEY + Util.toHexString(new byte[] { key });
+	}
+	
+	private String createLongKey() {
+		long key = readInt64();
+		return PREFIX_LONG_KEY + key;
 	}
 	
 	private String createIntKey() {

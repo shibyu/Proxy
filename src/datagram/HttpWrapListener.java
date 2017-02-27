@@ -19,6 +19,8 @@ public class HttpWrapListener extends UdpListener {
 	private DelegatePipe requestDelegatePipe;
 	private DelegatePipe responseDelegatePipe;
 	
+	private boolean ignoreRUDP;
+	
 	public HttpWrapListener(String category) {
 		super(category);
 		host = new InetSocketAddress(udpConfig.getHost(category), udpConfig.getHostPort(category));
@@ -30,6 +32,7 @@ public class HttpWrapListener extends UdpListener {
 			Host responseSlaveHost = new Host(tcpConfig.getHost(), udpConfig.getResponseSlavePort(category));
 			responseDelegatePipe = new DelegatePipe(responseSlaveHost, this, udpConfig.getResponseDataConverter(category)); 
 		}
+		ignoreRUDP = udpConfig.getBoolProperty(category, "IgnoreRUDP", true, false);
 	}
 
 	// TODO: MasterTask から複製しているので、共通の基底クラスを作る必要がありそう;
@@ -49,18 +52,21 @@ public class HttpWrapListener extends UdpListener {
 		if( hasRequestSlave() ) {
 			Content content = new Content(packet.getData(), 0, packet.getLength());
 			try {
-				requestDelegatePipe.processContent(content, packet.getSocketAddress().toString(), TYPE_REQUEST);
+				// 送信に成功したらそこでおしまい;
+				if( requestDelegatePipe.processContent(content, packet.getSocketAddress().toString(), TYPE_REQUEST, ignoreRUDP) ) {
+					return;
+				}
 			}
 			catch( IOException e ) {
 				trace(e);
 				// TODO: proxy に送信失敗した場合のエラー処理...;
+				// 生のパケットを送ってしまえば問題ないはず...;
 			}
 		}
-		else {
-			// そうでなければ、peer に送る;
-			packet.setSocketAddress(host);
-			peer.send(packet);
-		}
+		// そうでなければ、peer に送る;
+		// 何らかの理由で送信できなかった場合とかも含む;
+		packet.setSocketAddress(host);
+		peer.send(packet);
 	}
 	
 	public void pushRequest(String client, Content content) {
@@ -77,17 +83,17 @@ public class HttpWrapListener extends UdpListener {
 		if( hasResponseSlave() ) {
 			Content content = new Content(packet.getData(), 0, packet.getLength());
 			try {
-				responseDelegatePipe.processContent(content, clientAddress.toString(), TYPE_RESPONSE);
+				if( responseDelegatePipe.processContent(content, clientAddress.toString(), TYPE_RESPONSE, ignoreRUDP) ) {
+					return;
+				}
 			}
 			catch( IOException e ) {
 				trace(e);
 				// TODO: proxy に送信失敗した場合のエラー処理;
 			}
 		}
-		else {
-			packet.setSocketAddress(clientAddress);
-			sendClient(packet);
-		}
+		packet.setSocketAddress(clientAddress);
+		sendClient(packet);
 	}
 	
 	public void pushResponse(String client, Content content) {

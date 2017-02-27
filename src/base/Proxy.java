@@ -28,7 +28,7 @@ public class Proxy {
 				return;
 			}
 			if( arg.equalsIgnoreCase("http") ) {
-				TcpClient http = new HttpClient(CATEGORY_HTTP);
+				TcpClient http = new HttpClient(CATEGORY_HTTP_ECHO);
 				http.execute();
 				return;
 			}

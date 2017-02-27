@@ -1,0 +1,15 @@
+ListenPort:int:7070
+RequestInputType:string:binary
+RequestOutputType:string:binary
+ResponseInputType:string:binary
+ResponseOutputType:string:binary
+Host:string:check.ffexforce.jp
+HostPort:int:7070
+Enable:bool:true
+
+HeaderSize:int:8
+LengthOffset:int:4
+LengthType:string:int32
+MagicOffset:int:0
+MagicSize:int:4
+MagicValue:String:0xDEADBEAF

@@ -4,15 +4,17 @@ import static base.Config.*;
 
 import java.net.*;
 
+import util.Host;
+
 public class PortMapListener extends UdpListener {
 	
 	private int fromPort;
 	private SocketAddress host;
 	
-	public PortMapListener(int fromPort, int toPort) {
+	public PortMapListener(int fromPort, Host target) {
 		super(CATEGORY_PORTMAP);
 		this.fromPort = fromPort;
-		host = new InetSocketAddress("127.0.0.1", toPort);
+		host = new InetSocketAddress(target.getHost(), target.getPort());
 	}
 	
 	@Override

@@ -31,9 +31,14 @@ public class SlaveChannel extends TcpChannel {
 		this.isTCP = isTCP;
 	}
 	
+	@Override 
+	public Config getConfig() {
+		return Config.getConfig(isTCP);
+	}
+	
 	@Override
 	public int getPort() {
-		return Config.getConfig(isTCP).getSlavePort(category, type);
+		return getConfig().getSlavePort(category, type);
 	}
 	
 	@Override

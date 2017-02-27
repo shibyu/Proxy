@@ -25,13 +25,21 @@ abstract public class Pipe extends Thread {
 
 	public Pipe(Task owner, InputStream input, OutputStream output, int bufferSize) {
 		this.owner = owner;
-		this.output = output;
 		if( bufferSize == 0 ) {
 			// 設定だけの問題ではない可能性があるので、実装エラーにしておく;
 			throw new ImplementationException("bufferSize should not be 0");
 		}
 		this.bufferSize = bufferSize;
+		setInputStream(input);
+		setOutputStream(output);
+	}
+	
+	protected void setInputStream(InputStream input) {
 		controller = new InputController(input);
+	}
+	
+	protected void setOutputStream(OutputStream output) {
+		this.output = output;
 	}
 
 	// output に流すところまでやらないとどうしようもないことが判明したので修正;
@@ -50,7 +58,7 @@ abstract public class Pipe extends Thread {
 		}
 		catch( IOException e ) {
 			// Connection reset はこちらの都合ではない気がするので trace しないでおく (後でやっかいなことになるかも...？);
-			if( e.getMessage().indexOf("Connection reset") >= 0 ) { return; }
+			if( e.getMessage() != null && e.getMessage().indexOf("Connection reset") >= 0 ) { return; }
 			debug(e);
 		}
 		

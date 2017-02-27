@@ -7,19 +7,20 @@ import java.io.*;
 import java.nio.channels.*;
 
 import tasks.*;
+import util.Host;
 
 // リクエストを別のポートに転送する;
 
 public class PortMapChannel extends TcpChannel {
 
 	private int fromPort;
-	private int toPort;
+	private Host target;
 	
-	public PortMapChannel(int fromPort, int toPort) {
+	public PortMapChannel(int fromPort, Host target) {
 		// BaseChannel のコンストラクタは作っていないような気がするが、一応呼んでおく;
 		super(CATEGORY_PORTMAP);
 		this.fromPort = fromPort;
-		this.toPort = toPort;
+		this.target = target;
 	}
 	
 	
@@ -31,7 +32,7 @@ public class PortMapChannel extends TcpChannel {
 	@Override
 	public Task createTask(SocketChannel clientConnection) {
 		try {
-			return new PortMapTask(clientConnection, category, toPort);
+			return new PortMapTask(clientConnection, category, target);
 		}
 		catch( IOException e ) {
 			trace(e);

@@ -21,7 +21,7 @@ public class ProcessorPipe extends Pipe {
 		boolean showContent = false;
 		while( processor.hasMoreContent() ) {
 			++contentId;
-			byte result[] = processor.getContent().getBytes();
+			byte result[] = processor.pullContent().getBytes();
 			int offset = 0;
 			if( processor instanceof BinaryProcessor ) {
 				offset = ((BinaryProcessor)(processor)).getHeaderSize();

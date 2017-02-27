@@ -88,7 +88,7 @@ class JsonDeserializer implements Deserializer {
 		search('}');
 		return result;
 	}
-	
+
 	private Object readArray() {
 		List<Object> result = new ArrayList<Object>();
 		search('[');
@@ -107,71 +107,34 @@ class JsonDeserializer implements Deserializer {
 			search(',');
 		}
 		search(']');
-		return convertToTypedArray(result);
+		Object array[] = new Object[result.size()];
+		result.toArray(array);
+		return array;
 	}
-	
-	private Object convertToTypedArray(List<Object> list) {
-		// generics を使って楽に書けそうな気がするのだが、静的な型でないと instanceof が使えないらしいので断念;
-		// TODO: 関数群が無駄に増えそうなので、適宜別クラスに util 関数にでもして追い出したい;
-		if( isIntArray(list) ) { return toIntArray(list); }
-		if( isStringArray(list) ) { return toStringArray(list); }
-		return toObjectArray(list);
-	}
-	
-	private boolean isIntArray(List<Object> list) {
-		for( Object object : list ) {
-			if( (object instanceof Integer) == false ) { return false; }
-		}
-		return true;
-	}
-	
-	private boolean isStringArray(List<Object> list) {
-		for( Object object : list ) {
-			if( (object instanceof String) == false ) { return false; }
-		}
-		return true;
-	}
-	
-	private int[] toIntArray(List<Object> list) {
-		int length = list.size();
-		int result[] = new int[length];
-		for( int i = 0; i < length; ++i ) {
-			Object object = list.get(i);
-			if( (object instanceof Integer) == false ) { throw new ImplementationException(object + " is not Integer"); }
-			result[i] = (Integer)(object);
-		}
-		return result;
-	}
-	
-	private String[] toStringArray(List<Object> list) {
-		int length = list.size();
-		String result[] = new String[length];
-		for( int i = 0; i < length; ++i ) {
-			Object object = list.get(i);
-			if( (object instanceof String) == false ) { throw new ImplementationException(object + " is not String"); }
-			result[i] = (String)(object);
-		}
-		return result;
-	}
-	
-	private Object[] toObjectArray(List<Object> list) {
-		int length = list.size();
-		Object result[] = new Object[length];
-		for( int i = 0; i < length; ++i ) {
-			result[i] = list.get(i);
-		}
-		return result;
-	}
-	
+
 	private String readString() {
 		// TODO: " のエスケープをどうするか？;
 		search('"');
-		int start = pointer;
+		boolean escape = false;
+		StringBuilder result = new StringBuilder();
 		for( ; pointer < buffer.length(); ++pointer ) {
-			if( isCurrent('"') ) {
-				String result = buffer.substring(start, pointer);
-				++pointer;
-				return result;
+			if( escape ) {
+				result.append(getCurrent());
+				escape = false;
+			}
+			else {
+				if( isCurrent('\\') ) {
+					escape = true;
+				}
+				else {
+					if( isCurrent('"') ) {
+						++pointer;
+						return result.toString();
+					}
+					else {
+						result.append(getCurrent());
+					}
+				}
 			}
 		}
 		throw new ImplementationException("invalid JSON format: unexpected end of content");
@@ -208,6 +171,17 @@ class JsonDeserializer implements Deserializer {
 					catch( DataFormatException e ) {
 						throw new ImplementationException("implementation error: " + value + " is not boolean");
 					}
+				}
+				else if( value.indexOf(".") >= 0 ) {
+					if( value.endsWith("f") || value.endsWith("F") ) {
+						value = value.substring(0, value.length() - 1);
+						return Parser.parseFloat(value);
+					}
+					return Parser.parseDouble(value);
+				}
+				else if( value.endsWith("l") || value.endsWith("L") ) {
+					value = value.substring(0, value.length() - 1);
+					return Parser.parseLong(value);
 				}
 				return Parser.parseInt(value);
 			}

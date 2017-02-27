@@ -144,15 +144,18 @@ public class PhotonUdpRule extends CustomRule {
 			{
 				packet.put(KEY_PACKET_TYPE, PACKET_TYPE_PHOTON);
 				getPhotonCore(packet, buffer, offset + payloadPosition);
+				packet.setRUDPOnly(false);
 			}
 			return;
 		case 0x07:
 			// maybe Photon Packet with preceding 1 byte;
+			// memo: 連番になっているようにも見えたが、あるときとないときがあるので良く分からない;
 			{
 				packet.put(KEY_PACKET_TYPE, PACKET_TYPE_PHOTON_PLUS);
 				packet.put(KEY_PHOTON_PLUS, DataIO.readInt32(buffer, offset + POS_PHOTON_PLUS));
 				payloadPosition += 4;
 				getPhotonCore(packet, buffer, offset + payloadPosition);
+				packet.setRUDPOnly(false);
 			}
 			return;
 			// 取り敢えずこの二つは存在を認識しているので message を出さないようにしておく;
@@ -172,6 +175,9 @@ public class PhotonUdpRule extends CustomRule {
 		}
 		// 残りは payload として出力してしまう;
 		packet.put(KEY_PACKET_PAYLOAD, Util.toHexString(buffer, offset + payloadPosition, size - payloadPosition));
+		// Photon 関連の Packet は適切に処理して return してしまっているので、ここに到達するのは RUDP 関連の Packet のみと信じることにする;
+		// TODO: Photon 系が紛れ込んでいないことを確認する...;
+		packet.setRUDPOnly(true);
 	}
 	
 	private void getPhotonCore(IntermediateObject packet, byte buffer[], int offset) {

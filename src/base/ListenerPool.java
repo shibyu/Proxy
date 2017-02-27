@@ -14,6 +14,7 @@ import exceptions.ImplementationException;
 import java.io.*;
 
 import util.Parser;
+import util.Host;
 
 // tcp については connection の概念があるので、Channel を使って管理する;
 // udp についても Channel を使用すること自体は可能だが、connection の概念がなく、それを実装するようにしないといけない;
@@ -73,7 +74,12 @@ public class ListenerPool {
 			System.exit(0);
 		}
 		tcpRegister( EchoChannel.getInstance() );
-		tcpRegister( HttpChannel.getInstance() );
+		// WebSocket 用に slave が必要になる可能性があるので、ここで register しておく;
+		if( tcpRegister( HttpChannel.getInstance() ) ) {
+			setupRequestSlave(CATEGORY_HTTP, true);
+			setupResponseSlave(CATEGORY_HTTP, true);
+		}
+		tcpRegister( HttpEchoChannel.getInstance() );
 		setupTcpPortMap();
 		// Master Slave Channel を config に従って量産する;
 		setupMasterSlave();
@@ -88,12 +94,14 @@ public class ListenerPool {
 		setupHttpWrapper();
 	}
 
+	// port map といいつつトンネルにも使える...かも;
 	private void setupTcpPortMap() {
 		Map<?, ?> mapping = tcpConfig.getMapProperty(CATEGORY_PORTMAP, "portmap");
 		for (Entry<?, ?> pair : mapping.entrySet()) {
 			int fromPort = Parser.parseInt(pair.getKey().toString());
-			int toPort = Parser.parseInt(pair.getValue().toString());
-			tcpRegister( new PortMapChannel(fromPort, toPort) );
+			Host target = Parser.parsePort(pair.getValue().toString());
+			trace("map tcp port: " + fromPort + " => " + target);
+			tcpRegister( new PortMapChannel(fromPort, target) );
 		}
 	}
 	
@@ -101,8 +109,9 @@ public class ListenerPool {
 		Map<?, ?> mapping = udpConfig.getMapProperty(CATEGORY_PORTMAP, "portmap");
 		for( Entry<?, ?> pair : mapping.entrySet() ) {
 			int fromPort = Parser.parseInt(pair.getKey().toString());
-			int toPort = Parser.parseInt(pair.getValue().toString());
-			udpRegister( new PortMapListener(fromPort, toPort) );
+			Host target = Parser.parsePort(pair.getValue().toString());
+			trace("map udp port: " + fromPort + " => " + target);
+			udpRegister( new PortMapListener(fromPort, target) );
 		}
 	}
 	

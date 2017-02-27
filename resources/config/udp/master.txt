@@ -1,3 +1,4 @@
-test:bool:true
-photon_game:bool:true
-photon_master:bool:true
+#photon_game:bool:true
+#photon_master:bool:true
+#flags_photon:bool:true
+#flags_photon2:bool:true

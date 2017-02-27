@@ -34,7 +34,7 @@ public class AdminTask extends Task {
 			while( (length = controller.read(buffer)) > 0 ) {
 				processor.process(buffer, length);
 				while( processor.hasMoreContent() ) {
-					String command = new String(processor.getContent().getBytes());
+					String command = new String(processor.pullContent().getBytes());
 					if( command.equalsIgnoreCase("shutdown") ) {
 						clientOutput.write("bye".getBytes());
 						lineBreak();

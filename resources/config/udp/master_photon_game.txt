@@ -10,3 +10,4 @@ HostPort:int:5056
 
 OriginalFormat:string:PhotonUdp
 ProxyFormat:string:JSON
+IgnoreRUDP:bool:true

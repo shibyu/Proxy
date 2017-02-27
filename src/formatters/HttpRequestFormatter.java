@@ -3,7 +3,7 @@ package formatters;
 import java.util.*;
 import java.io.*;
 
-import contents.Content;
+import contents.*;
 
 import util.Host;
 import base.Constant;
@@ -20,8 +20,8 @@ public class HttpRequestFormatter extends Formatter {
 	private String host;
 	private int port;
 
+	// TODO: これのクリアとかってしていない気がするのだが...;
 	private Map<String, String> additionalHeader;
-	
 	
 	public HttpRequestFormatter(Host host) {
 		this(host.getHost(), host.getPort());
@@ -77,10 +77,20 @@ public class HttpRequestFormatter extends Formatter {
 	@Override
 	public void outputBytes(OutputStream output) throws IOException {
 		StringBuilder builder = new StringBuilder();
-		builder.append(getMethod()).append(" ").append("http://").append(getHost()).append(":").append(getPort()).append(getUri()).append(" HTTP/1.1\r\n");
-		builder.append("Host: ").append(getHost()).append(":").append(getPort()).append("\r\n");
-		for( Map.Entry<String, String> pair : additionalHeader.entrySet() ) {
-			builder.append(pair.getKey()).append(": ").append(pair.getValue()).append("\r\n");
+		if( content instanceof HttpContent ) {
+			HttpContent httpContent = (HttpContent)(content);
+			builder.append(httpContent.getFirstLine()).append("\r\n");
+			for( String key : httpContent.getHeaderKeySet() ) {
+				if( key.equalsIgnoreCase("Content-Length") ) { continue; }
+				builder.append(key).append(": ").append(httpContent.getHeaderValue(key)).append("\r\n");
+			}
+		}
+		else {
+			builder.append(getMethod()).append(" ").append("http://").append(getHost()).append(":").append(getPort()).append(getUri()).append(" HTTP/1.1\r\n");
+			builder.append("Host: ").append(getHost()).append(":").append(getPort()).append("\r\n");
+			for( Map.Entry<String, String> pair : additionalHeader.entrySet() ) {
+				builder.append(pair.getKey()).append(": ").append(pair.getValue()).append("\r\n");
+			}
 		}
 		if( hasContent() ) {
 			builder.append("Content-Length: ").append(content.length()).append("\r\n");

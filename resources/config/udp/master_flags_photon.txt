@@ -1,13 +1,12 @@
-ListenPort:int:15055
+ListenPort:int:55
 Enable:bool:true
 EnableRequestSlave:bool:true
 EnableResponseSlave:bool:true
-RequestSlavePort:int:25055
-ResponseSlavePort:int:35055
+RequestSlavePort:int:20055
+ResponseSlavePort:int:30055
 
-Host:string:127.0.0.1
+Host:string:164.70.8.23
 HostPort:int:5055
 
 OriginalFormat:string:PhotonUdp
 ProxyFormat:string:JSON
-IgnoreRUDP:bool:true

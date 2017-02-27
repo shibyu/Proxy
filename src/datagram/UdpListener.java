@@ -62,7 +62,8 @@ abstract public class UdpListener extends Thread {
 	}
 	
 	// 接続が切れたか分からないので、一定時間を経過した peer は切ってしまう;
-	synchronized public void cleanup() {
+	synchronized public int cleanup() {
+		int cleanupCount = 0;
 		for( Entry<String, UdpPeer> pair : connections.entrySet() ) {
 			UdpPeer peer = pair.getValue();
 			if( peer.isDirty() ) {
@@ -72,8 +73,10 @@ abstract public class UdpListener extends Thread {
 				// dirty flag が立っていないので、音信不通ということになる;
 				// 終われば自分から離脱するはずなので、ここでは connections から除去しないでおく;
 				peer.terminate();
+				++cleanupCount;
 			}
 		}
+		return cleanupCount;
 	}
 	
 	synchronized public void remove(String client) {
@@ -105,6 +108,7 @@ abstract public class UdpListener extends Thread {
 	public void run() {
 		
 		int bufferSize = udpConfig.getBufferSize(CATEGORY_PORTMAP);
+		trace("udp bufferSize: " + bufferSize);
 		byte buffer[] = new byte[bufferSize];
 		DatagramPacket packet = new DatagramPacket(buffer, bufferSize);
 		

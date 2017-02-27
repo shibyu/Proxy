@@ -9,7 +9,7 @@ import rules.RuleFactory;
 import util.Util;
 
 // SerializerFactory から作られるだけなので package private にしておく;
-class PhotonSerializer implements Serializer {
+class PhotonSerializer extends Serializer {
 
 	// TODO: バッファが足りなくなると死んでしまう問題がある...;
 	
@@ -22,7 +22,7 @@ class PhotonSerializer implements Serializer {
 	}
 
 	@Override
-	public Content serialize(IntermediateObject object) {
+	public Content execute(IntermediateObject object) {
 		byte buffer[] = new byte[bufferSize];
 		rule.setConst(buffer, object.getInt(KEY_CONST));
 		rule.setFlag(buffer, object.getInt(KEY_FLAG));

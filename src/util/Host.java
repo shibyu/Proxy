@@ -6,7 +6,7 @@ public class Host {
 
 	private String host;
 	private int port;
-
+	
 	public Host(String category) {
 		this(tcpConfig.getHost(category), tcpConfig.getHostPort(category));
 	}
@@ -28,6 +28,10 @@ public class Host {
 
 	public int getPort() {
 		return port;
+	}
+	
+	public void setPort(int port) {
+		this.port = port;
 	}
 
 	public boolean isLoopBack() {

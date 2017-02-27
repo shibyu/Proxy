@@ -38,7 +38,7 @@ public class HttpClient extends TcpClient {
 	@Override
 	public void execute() {
 
-		int bufferSize = tcpConfig.getBufferSize(CATEGORY_HTTP);
+		int bufferSize = tcpConfig.getBufferSize(CATEGORY_HTTP_ECHO);
 		HttpProcessor processor = new HttpProcessor(bufferSize);
 
 		String line;

@@ -3,8 +3,14 @@ package contents.serializers;
 import contents.Content;
 import contents.IntermediateObject;
 
-public interface Serializer {
+abstract public class Serializer {
 
-	public Content serialize(IntermediateObject object);
+	public Content serialize(IntermediateObject object) {
+		Content result = execute(object);
+		result.setRUDPOnly(object.isRUDPOnly());
+		return result;
+	}
+	
+	abstract public Content execute(IntermediateObject object);
 	
 }

@@ -11,7 +11,6 @@ import base.Config;
 import contents.DataConverter;
 import exceptions.ImplementationException;
 import pipes.*;
-import rules.RuleFactory;
 
 // proxy からリクエストを受けて、Master に返すための worker Task;
 // 複数の Master を相手に仕事をする可能性があるため、特定の Master が死んでいたとしても、仕事は完了しない;
@@ -24,26 +23,34 @@ public class SlaveTask extends Task {
 	private Pipe mergePipe;
 	private Set<Integer> masterTaskIds;
 	
+	// Task を取り扱うのは TCP であるが、Master 側が UDP の可能性もあるので、それを制御するためのフラグ...;
+	// TODO: Config 周りを整理する必要がありそう...;
 	private boolean isTCP;
 	
 	private DataConverter converter;
 	
 	public SlaveTask(SocketChannel clientConnection, String category, int type, boolean isTCP) throws IOException {
-		super(clientConnection, category);
+		super(clientConnection, category, true);
 		this.type = type;
 		this.isTCP = isTCP;
 		// TreeSet を使っておくと、出力が sort される...;
 		masterTaskIds = new TreeSet<Integer>();
 		switch( type ) {
 		case TYPE_REQUEST:
-			converter = Config.getConfig(isTCP).getRequestReverseConverter(category);
+			converter = getConfig().getRequestReverseConverter(category);
 			break;
 		case TYPE_RESPONSE:
-			converter = Config.getConfig(isTCP).getResponseReverseConverter(category);
+			converter = getConfig().getResponseReverseConverter(category);
 			break;
 		default:
 			throw new ImplementationException("unknown type: " + type);
 		}
+		setBufferSize(category);
+	}
+	
+	@Override
+	protected Config getConfig() {
+		return Config.getConfig(isTCP);
 	}
 	
 	@Override
@@ -52,7 +59,7 @@ public class SlaveTask extends Task {
 		// ただし master は TCP と UDP で異なる;
 		try {
 			// http => binary 変換をして formatter を request Queue に入れる;
-			mergePipe = new MergePipe(this, clientInput, clientOutput, bufferSize, type, RuleFactory.getRule(category, isTCP), pool, converter);
+			mergePipe = new MergePipe(this, clientInput, clientOutput, bufferSize, type, pool, converter);
 			mergePipe.start();
 			mergePipe.join();
 		}

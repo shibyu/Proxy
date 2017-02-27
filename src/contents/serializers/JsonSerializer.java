@@ -7,7 +7,7 @@ import contents.IntermediateObject;
 import exceptions.ImplementationException;
 
 //SerializerFactory から作られるだけなので package private にしておく;
-class JsonSerializer implements Serializer {
+class JsonSerializer extends Serializer {
 	
 	private int level;
 	private String padding;
@@ -36,7 +36,7 @@ class JsonSerializer implements Serializer {
 	}
 
 	@Override
-	public Content serialize(IntermediateObject object) {
+	public Content execute(IntermediateObject object) {
 		StringBuilder builder = new StringBuilder();
 		writeMap(builder, object);
 		return new Content( builder.toString().getBytes() );
@@ -44,10 +44,10 @@ class JsonSerializer implements Serializer {
 	
 	private void writeMap(StringBuilder builder, Map<?, ?> map) {
 		if( map.size() == 0 ) {
-			builder.append(padding).append("{ }\n");
+			builder.append(" ").append("{ }");
 			return;
 		}
-		builder.append(padding).append("{\n");
+		builder.append("\n").append(padding).append("{\n");
 		incrementLevel();
 		String delimiter = "";
 		for( Map.Entry<?, ?> entry : map.entrySet() ) {
@@ -59,12 +59,13 @@ class JsonSerializer implements Serializer {
 			writeContent(builder, entry.getValue());
 		}
 		decrementLevel();
-		builder.append("\n").append(padding).append("}\n");
+		builder.append("\n").append(padding).append("}");
 	}
 	
 	private void writeString(StringBuilder builder, String value) {
 		builder.append("\"");
 		// TODO: " のエスケープをどうしようか...;
+		value = value.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\\\"");
 		builder.append(value);
 		builder.append("\"");
 	}
@@ -74,42 +75,30 @@ class JsonSerializer implements Serializer {
 	}
 	
 	private void writeBoolean(StringBuilder builder, boolean value) {
+		// そのまま結合しても良さそうな気はするが...？;
 		builder.append(value ? "true" : "false");
+	}
+	
+	private void writeLong(StringBuilder builder, long value) {
+		builder.append(String.valueOf(value)).append("L");
 	}
 	
 	private void writeInteger(StringBuilder builder, int value) {
 		builder.append(String.valueOf(value));
 	}
 	
-	private void writeIntArray(StringBuilder builder, int values[]) {
-		builder.append(padding).append("[\n");
-		incrementLevel();
-		String delimiter = "";
-		for( int value : values ) {
-			builder.append(delimiter);
-			delimiter = ", ";
-			writeInteger(builder, value);
-		}
-		decrementLevel();
-		builder.append(padding).append("]\n");
+	private void writeFloat(StringBuilder builder, float value) {
+		builder.append(String.valueOf(value)).append("F");
 	}
 	
-	private void writeStringArray(StringBuilder builder, String values[]) {
-		builder.append(padding).append("[\n");
-		incrementLevel();
-		String delimiter = "";
-		for( String value : values ) {
-			builder.append(delimiter);
-			delimiter = ", ";
-			builder.append("\"").append(value).append("\"");
-		}
-		decrementLevel();
-		builder.append(padding).append("]\n");
+	private void writeDouble(StringBuilder builder, double value) {
+		builder.append(String.valueOf(value));
 	}
 	
-	private void writeObjectArray(StringBuilder builder, Object values[]) {
-		builder.append(padding).append("[\n");
+	private void writeArray(StringBuilder builder, Object values[]) {
+		builder.append("\n").append(padding).append("[\n");
 		incrementLevel();
+		builder.append(padding);
 		String delimiter = "";
 		for( Object value : values ) {
 			builder.append(delimiter);
@@ -117,9 +106,9 @@ class JsonSerializer implements Serializer {
 			writeContent(builder, value);
 		}
 		decrementLevel();
-		builder.append(padding).append("]\n");
+		builder.append("\n").append(padding).append("]");
 	}
-	
+
 	private void writeContent(StringBuilder builder, Object value) {
 		if( value == null ) {
 			writeNull(builder);
@@ -130,18 +119,21 @@ class JsonSerializer implements Serializer {
 		else if( value instanceof Integer ) {
 			writeInteger(builder, (Integer)(value));
 		}
+		else if( value instanceof Long ) {
+			writeLong(builder, (Long)(value));
+		}
+		else if( value instanceof Float ) {
+			writeFloat(builder, (Float)(value));
+		}
+		else if( value instanceof Double ) {
+			writeDouble(builder, (Double)(value));
+		}
 		else if( value instanceof Map ) {
 			writeMap(builder, (Map<?, ?>)(value));
 		}
 		// TODO: array は Object[] に統合できないか検討する...;
-		else if( value instanceof int[] ) {
-			writeIntArray(builder, (int[])(value));
-		}
-		else if( value instanceof String[] ) {
-			writeStringArray(builder, (String[])(value));
-		}
 		else if( value instanceof Object[] ) {
-			writeObjectArray(builder, (Object[])(value));
+			writeArray(builder, (Object[])(value));
 		}
 		else if( value instanceof String ) {
 			writeString(builder, (String)(value));

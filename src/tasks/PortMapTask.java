@@ -4,6 +4,7 @@ import static base.LogManager.*;
 
 import base.SocketManager;
 import pipes.*;
+import util.Host;
 
 import java.net.*;
 import java.io.*;
@@ -11,14 +12,14 @@ import java.nio.channels.SocketChannel;
 
 public class PortMapTask extends Task {
 
-	private int toPort;
+	private Host target;
 	
 	private Pipe requestPipe;
 	private Pipe responsePipe;
 
-	public PortMapTask(SocketChannel clientConnection, String category, int toPort) throws IOException {
+	public PortMapTask(SocketChannel clientConnection, String category, Host target) throws IOException {
 		super(clientConnection, category);
-		this.toPort = toPort;
+		this.target = target;
 	}
 
 	@Override
@@ -33,8 +34,12 @@ public class PortMapTask extends Task {
 
 		try {
 			
-			// TODO: remote host への port mapping を実現してもいいかも;
-			socket = SocketManager.tcpConnect("127.0.0.1", toPort);
+			// DONE: remote host への port mapping を実現;
+			// とはいえ、HTTP みたいな Host 情報の乗っているプロトコルでは、挙動がおかしくなるっぽい;
+			// クライアント側で map されていることを認識していないとダメっぽい;
+			// それだとどうなるのやら...だが;
+			// TODO: remote host の場合は別クラスにした方が良いのかも？;
+			socket = SocketManager.tcpConnect(target);
 			if( socket == null ) { return; }
 			
 			requestPipe = new TruePipe(this, clientInput, socket.getOutputStream(), bufferSize);
