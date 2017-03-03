@@ -2,6 +2,7 @@ package util;
 
 import java.util.Arrays;
 
+import exceptions.DataFormatException;
 import exceptions.ImplementationException;
 
 public class Util {
@@ -54,6 +55,18 @@ public class Util {
 	public static void writeByteArray(byte output[], int outputOffset, byte input[], int inputOffset, int length) {
 		for( int i = 0; i < length; ++i ) {
 			output[outputOffset + i] = input[inputOffset + i];
+		}
+	}
+	
+	public static int writeHexString(byte output[], int offset, String hexString) {
+		try {
+			int size = hexString.length() / 2;
+			byte rawString[] = Parser.parseByteArray(size, hexString);
+			Util.writeByteArray(output, offset, rawString, 0, size);
+			return size;
+		}
+		catch( DataFormatException e ) {
+			throw new ImplementationException("invalid data: " + hexString);
 		}
 	}
 	

@@ -2,8 +2,7 @@ package base;
 
 import java.util.*;
 
-import static base.Constant.TYPE_REQUEST;
-import static base.Constant.TYPE_RESPONSE;
+import static base.Constant.*;
 
 import java.io.*;
 
@@ -53,6 +52,8 @@ public class Config {
 	private static final String KEY_RULE = "Rule";
 	public static final String KEY_CLEANUP = "Cleanup";
 	private static final String KEY_KEEP_ALIVE= "KeepAlive";
+	private static final String KEY_REQUEST_DEBUG = "RequestDebug";
+	private static final String KEY_RESPONSE_DEBUG = "ResponseDebug";
 	
 	public Config(String path) {
 		rawConfig = new HashMap<String, Map<String, Object>>();
@@ -313,8 +314,12 @@ public class Config {
 		return getStringProperty(category, KEY_RESPONSE_OUTPUT_TYPE);
 	}
 	
-	public String getRule(String category) {
-		return getStringProperty(category, KEY_RULE, true, null);
+	public String getRule(String category, int type) {
+		String rule = getStringProperty(category, KEY_RULE, true, null);
+		if( type != TYPE_UNKNOWN ) {
+			rule += getTypeString(type);
+		}
+		return rule;
 	}
 	
 	private String getRequestFormat(String category) {
@@ -418,6 +423,24 @@ public class Config {
 			return new DataConverter(getStringProperty(category, KEY_FORMAT_FROM), getStringProperty(category, KEY_FORMAT_TO));
 		}
 		return null;
+	}
+	
+	public boolean isRequestDebug(String category, int value) {
+		return isContain(category, KEY_REQUEST_DEBUG, value);
+	}
+
+	public boolean isResponseDebug(String category, int value) {
+		return isContain(category, KEY_RESPONSE_DEBUG, value);
+	}
+
+	private boolean isContain(String category, String key, int value) {
+		List<?> list = getListProperty(category, key);
+		// そもそもそんな Config がない場合...;
+		if( list == null ) { return false; }
+		for( Object data : list ) {
+			if( Parser.parseInt(data.toString()) == value ) { return true; }
+		}
+		return false;
 	}
 	
 }

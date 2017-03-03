@@ -2,6 +2,7 @@ package pipes;
 
 import static base.LogManager.*;
 import static base.Config.*;
+import static base.Constant.*;
 
 import formatters.*;
 import processors.*;
@@ -47,11 +48,21 @@ public class DelegatePipe extends Pipe implements PushablePipe {
 		super(owner, input, output, bufferSize);
 		this.type = type;
 		Config config = Config.getConfig(isTCP);
-		processor = new BinaryProcessor(bufferSize, RuleFactory.getRule(category, isTCP));
+		processor = new BinaryProcessor(bufferSize, RuleFactory.getRule(category, type, isTCP));
 		formatter = new HttpRequestFormatter( new Host(config.getHost(), config.getSlavePort(category, type)) );
 		formatter.setupSlaveOption(owner.getTaskId(), type);
-		converter = config.getRequestDataConverter(category);
-		binaryFormatter = new BinaryFormatter(RuleFactory.getRule(category, true));
+		// TODO: データ変換は request と response で分けないといけない...;
+		switch( type ) {
+		case TYPE_REQUEST:
+			converter = config.getRequestDataConverter(category);
+			break;
+		case TYPE_RESPONSE:
+			converter = config.getResponseDataConverter(category);
+			break;
+		default:
+			throw new ImplementationException("unknown type: " + type);
+		}
+		binaryFormatter = new BinaryFormatter(RuleFactory.getRule(category, type, true));
 	}
 	
 	// request を proxy に転送するが UDP では connection がないので content を直接操作する;

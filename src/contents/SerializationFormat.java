@@ -8,4 +8,7 @@ public class SerializationFormat {
 	public static final String NAME_PHOTON = "Photon";
 	public static final String NAME_PHOTON_UDP = "PhotonUdp";
 	
+	public static final String NAME_EXPO_REQUEST = "ExpoRequest";
+	public static final String NAME_EXPO_RESPONSE = "ExpoResponse";
+	
 }

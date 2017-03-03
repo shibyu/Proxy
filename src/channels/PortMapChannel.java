@@ -32,7 +32,7 @@ public class PortMapChannel extends TcpChannel {
 	@Override
 	public Task createTask(SocketChannel clientConnection) {
 		try {
-			return new PortMapTask(clientConnection, category, target);
+			return new PortMapTask(clientConnection, category, fromPort, target);
 		}
 		catch( IOException e ) {
 			trace(e);

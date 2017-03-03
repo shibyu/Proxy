@@ -3,7 +3,7 @@ RequestInputType:string:binary
 RequestOutputType:string:binary
 ResponseInputType:string:binary
 ResponseOutputType:string:binary
-Host:string:check.ffexforce.jp
+Host:string:164.70.14.43
 HostPort:int:7070
 Enable:bool:true
 

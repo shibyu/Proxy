@@ -7,6 +7,7 @@ public class Constant {
 	public static final int HTTP_MODE_NORMAL = 1;
 	public static final int HTTP_MODE_WEBSOCKET = 2;
 	
+	public static final int TYPE_UNKNOWN = 0;
 	public static final int TYPE_REQUEST = 1;
 	public static final int TYPE_RESPONSE = 2;
 

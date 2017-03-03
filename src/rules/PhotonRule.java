@@ -1,12 +1,10 @@
 package rules;
 
 import contents.IntermediateObject;
-import exceptions.DataFormatException;
 import exceptions.ImplementationException;
 import photon.data.PhotonDataReader;
 import photon.data.PhotonDataWriter;
 import util.DataIO;
-import util.Parser;
 import util.Util;
 
 public class PhotonRule extends CustomRule {
@@ -162,16 +160,9 @@ public class PhotonRule extends CustomRule {
 			return writer.writeContent(object);
 		}
 		default:
-			try {
-				String hexString = (String)(object);
-				int size = hexString.length() / 2;
-				byte rawString[] = Parser.parseByteArray(size, hexString);
-				Util.writeByteArray(buffer, offset + POS_CONTENT, rawString, 0, size);
-				return offset + POS_CONTENT + size;
-			}
-			catch( DataFormatException e ) {
-				throw new ImplementationException("invalid data: " + object);
-			}
+			String hexString = (String)(object);
+			int size = Util.writeHexString(buffer, offset + POS_CONTENT, hexString);
+			return offset + POS_CONTENT + size;
 		}
 	}
 	

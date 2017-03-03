@@ -1,25 +1,25 @@
 package contents.serializers;
 
-import contents.SerializationFormat;
+import static contents.SerializationFormat.*;
+
 import exceptions.ImplementationException;
 
 public class SerializerFactory {
 
 	public static Serializer getInstance(String key) {
-		Serializer serializer = null;
-		if( key.equalsIgnoreCase(SerializationFormat.NAME_PHOTON) ) {
-			serializer = new PhotonSerializer();
+		if( key.equalsIgnoreCase(NAME_PHOTON) ) {
+			return new PhotonSerializer();
 		}
-		else if( key.equalsIgnoreCase(SerializationFormat.NAME_JSON) ) {
-			serializer = new JsonSerializer();
+		if( key.equalsIgnoreCase(NAME_JSON) ) {
+			return new JsonSerializer();
 		}
-		else if( key.equalsIgnoreCase(SerializationFormat.NAME_PHOTON_UDP) ) {
-			serializer = new PhotonUdpSerializer();
+		if( key.equalsIgnoreCase(NAME_PHOTON_UDP) ) {
+			return new PhotonUdpSerializer();
 		}
-		else {
-			throw new ImplementationException("unknown serializer: " + key);
+		if( key.equalsIgnoreCase(NAME_EXPO_REQUEST) || key.equalsIgnoreCase(NAME_EXPO_RESPONSE) ) {
+			return new ExpoSerializer();
 		}
-		return serializer;		
+		throw new ImplementationException("unknown serializer: " + key);
 	}
 	
 }

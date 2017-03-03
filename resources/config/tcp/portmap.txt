@@ -1,3 +1,7 @@
 Enable:bool:true
 #portmap:map:443=>8888
 portmap:map:80=>8888,443=>8888
+#portmap:map:80=>8888,443=>8888,7070=>164.70.14.43:7070
+
+#RequestDebug:csv:80,443,7070
+#ResponseDebug:csv:80,443,7070

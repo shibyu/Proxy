@@ -1,10 +1,13 @@
 package tasks;
 
 import static base.LogManager.*;
+import static base.Config.*;
+import static base.Constant.*;
 
 import base.SocketManager;
 import pipes.*;
 import util.Host;
+import util.DebugInputStream;
 
 import java.net.*;
 import java.io.*;
@@ -13,13 +16,17 @@ import java.nio.channels.SocketChannel;
 public class PortMapTask extends Task {
 
 	private Host target;
+	private boolean isRequestDebug;
+	private boolean isResponseDebug;
 	
 	private Pipe requestPipe;
 	private Pipe responsePipe;
 
-	public PortMapTask(SocketChannel clientConnection, String category, Host target) throws IOException {
+	public PortMapTask(SocketChannel clientConnection, String category, int fromPort, Host target) throws IOException {
 		super(clientConnection, category);
 		this.target = target;
+		isRequestDebug = tcpConfig.isRequestDebug(category, fromPort);
+		isResponseDebug = tcpConfig.isResponseDebug(category, fromPort);
 	}
 
 	@Override
@@ -42,8 +49,17 @@ public class PortMapTask extends Task {
 			socket = SocketManager.tcpConnect(target);
 			if( socket == null ) { return; }
 			
-			requestPipe = new TruePipe(this, clientInput, socket.getOutputStream(), bufferSize);
-			responsePipe = new TruePipe(this, socket.getInputStream(), clientOutput, bufferSize);
+			InputStream requestInput = clientInput;
+			if( isRequestDebug ) {
+				requestInput = new DebugInputStream(requestInput, TYPE_REQUEST);
+			}
+			requestPipe = new TruePipe(this, requestInput, socket.getOutputStream(), bufferSize);
+			
+			InputStream responseInput = socket.getInputStream();
+			if( isResponseDebug ) {
+				responseInput = new DebugInputStream(responseInput, TYPE_RESPONSE);
+			}
+			responsePipe = new TruePipe(this, responseInput, clientOutput, bufferSize);
 
 			requestPipe.start();
 			responsePipe.start();
