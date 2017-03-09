@@ -1,11 +1,11 @@
 package contents.serializers;
 
 import static rules.PhotonRule.*;
+import static rules.RuleFactory.*;
 
 import contents.Content;
 import contents.IntermediateObject;
 import rules.PhotonRule;
-import rules.RuleFactory;
 import util.Util;
 
 // SerializerFactory から作られるだけなので package private にしておく;
@@ -17,7 +17,7 @@ class PhotonSerializer extends Serializer {
 	private int bufferSize;
 	
 	PhotonSerializer() {
-		rule = RuleFactory.getPhotonRule();
+		rule = (PhotonRule)(createRule(RULE_PHOTON));
 		bufferSize = 65536;
 	}
 

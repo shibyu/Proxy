@@ -16,8 +16,9 @@ public class SerializerFactory {
 		if( key.equalsIgnoreCase(NAME_PHOTON_UDP) ) {
 			return new PhotonUdpSerializer();
 		}
-		if( key.equalsIgnoreCase(NAME_EXPO_REQUEST) || key.equalsIgnoreCase(NAME_EXPO_RESPONSE) ) {
-			return new ExpoSerializer();
+		if( key.startsWith(NAME_CUSTOM) ) {
+			String name = key.substring(NAME_CUSTOM.length());
+			return new ConfigurableSerializer(name);
 		}
 		throw new ImplementationException("unknown serializer: " + key);
 	}

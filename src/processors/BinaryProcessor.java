@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import contents.Content;
 import exceptions.ImplementationException;
-import rules.CustomRule;
+import rules.Rule;
 
 public class BinaryProcessor extends Processor {
 	
@@ -15,9 +15,9 @@ public class BinaryProcessor extends Processor {
 	
 	private int state;
 	
-	private CustomRule rule;
+	private Rule rule;
 	
-	public BinaryProcessor(int bufferSize, CustomRule rule) {
+	public BinaryProcessor(int bufferSize, Rule rule) {
 		super(bufferSize);
 		this.rule = rule;
 	}
@@ -45,7 +45,7 @@ public class BinaryProcessor extends Processor {
 			// 現状は何もしないことにしておく;
 			trace(rule.emitMagicForDebug(innerBuffer));
 		}
-		setContentLength( rule.getContentLength(innerBuffer) );
+		setContentLength( rule.getTotalSize(innerBuffer) );
 	}
 	
 	public int getHeaderSize() {

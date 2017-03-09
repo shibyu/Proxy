@@ -16,11 +16,9 @@ public class DeserializerFactory {
 		if( key.equalsIgnoreCase(NAME_PHOTON_UDP) ) {
 			return new PhotonUdpDeserializer();
 		}
-		if( key.equalsIgnoreCase(NAME_EXPO_REQUEST) ) {
-			return new ExpoDeserializer(true);
-		}
-		if( key.equalsIgnoreCase(NAME_EXPO_RESPONSE) ) {
-			return new ExpoDeserializer(false);
+		if( key.startsWith(NAME_CUSTOM) ) {
+			String name = key.substring(NAME_CUSTOM.length());
+			return new ConfigurableDeserializer(name);
 		}
 		throw new ImplementationException("unknown deserializer: " + key);
 	}

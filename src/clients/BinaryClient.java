@@ -7,15 +7,14 @@ import formatters.*;
 import pipes.Pipe;
 import pipes.ProcessorPipe;
 import processors.*;
-import rules.CustomRule;
-import rules.RuleFactory;
+import rules.*;
 import util.Host;
 
 import java.io.*;
 
 public class BinaryClient extends TcpClient {
 
-	CustomRule rule;
+	Rule rule;
 	private String category;
 
 	public BinaryClient(String category) {

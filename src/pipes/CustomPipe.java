@@ -4,7 +4,7 @@ import java.io.*;
 
 import exceptions.ConfigurationException;
 import processors.*;
-import rules.CustomRule;
+import rules.Rule;
 import tasks.Task;
 import formatters.*;
 import util.*;
@@ -17,13 +17,13 @@ public class CustomPipe extends Pipe {
 	private Processor processor;
 	private Formatter formatter;
 	
-	public CustomPipe(Task owner, InputStream input, OutputStream output, int bufferSize, DataType inputType, DataType outputType, CustomRule rule, Host host) {
+	public CustomPipe(Task owner, InputStream input, OutputStream output, int bufferSize, DataType inputType, DataType outputType, Rule rule, Host host) {
 		super(owner, input, output, bufferSize);
 		setupProcessor(inputType, bufferSize, rule);
 		setupFormatter(outputType, bufferSize, rule, host);
 	}
 	
-	private void setupProcessor(DataType inputType, int bufferSize, CustomRule rule) {
+	private void setupProcessor(DataType inputType, int bufferSize, Rule rule) {
 		if( inputType.isBinary() ) {
 			processor = new BinaryProcessor(bufferSize, rule);
 		}
@@ -35,7 +35,7 @@ public class CustomPipe extends Pipe {
 		}
 	}
 	
-	private void setupFormatter(DataType outputType, int bufferSize, CustomRule rule, Host host) {
+	private void setupFormatter(DataType outputType, int bufferSize, Rule rule, Host host) {
 		if( outputType.isBinary() ) {
 			formatter = new BinaryFormatter(rule);
 		}

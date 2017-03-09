@@ -9,8 +9,7 @@ import java.nio.channels.SocketChannel;
 
 import base.SocketManager;
 import pipes.*;
-import rules.CustomRule;
-import rules.RuleFactory;
+import rules.*;
 import util.DataType;
 import util.Host;
 
@@ -33,7 +32,7 @@ public class CustomTask extends Task {
 		trace(category + " " + tcpConfig.getHost(category));
 		
 		Host host = new Host(category);
-		CustomRule rule = RuleFactory.getRule(category, true);
+		Rule rule = RuleFactory.getRule(category, true);
 		
 		Socket socket = null;
 		

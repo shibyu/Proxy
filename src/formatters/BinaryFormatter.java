@@ -3,14 +3,14 @@ package formatters;
 import java.io.*;
 
 import contents.Content;
-import rules.CustomRule;
+import rules.Rule;
 import util.Util;
 
 public class BinaryFormatter extends Formatter {
 	
-	private CustomRule rule;
+	private Rule rule;
 	
-	public BinaryFormatter(CustomRule rule) {
+	public BinaryFormatter(Rule rule) {
 		this.rule = rule;
 	}
 

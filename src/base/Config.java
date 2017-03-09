@@ -84,8 +84,7 @@ public class Config {
 			reader = new BufferedReader(new FileReader(file));
 			String line;
 			while( (line = reader.readLine()) != null ) {
-				// Parser クラスの static method を呼び出す感じ;
-				// switch している部分はさすがにどうしようもなさそう;
+				line = line.trim();
 				if( line.startsWith("#") ) { continue; }
 				// key:type:value;
 				// value の中に : を入れられるようにしたいので、3個までしか切らない;

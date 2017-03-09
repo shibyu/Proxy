@@ -1,6 +1,7 @@
 package contents.deserializers;
 
 import static rules.PhotonUdpRule.*;
+import static rules.RuleFactory.*;
 
 import contents.*;
 import rules.*;
@@ -10,7 +11,7 @@ public class PhotonUdpDeserializer implements Deserializer {
 	private PhotonUdpRule rule;
 	
 	PhotonUdpDeserializer() {
-		rule = RuleFactory.getPhotonUdpRule();
+		rule = (PhotonUdpRule)(createRule(RULE_PHOTON_UDP));
 	}
 
 	@Override

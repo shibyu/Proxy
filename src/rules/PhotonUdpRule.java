@@ -1,6 +1,7 @@
 package rules;
 
 import static base.LogManager.*;
+import static rules.RuleFactory.*;
 
 import contents.IntermediateObject;
 import exceptions.DataFormatException;
@@ -9,6 +10,7 @@ import util.DataIO;
 import util.Parser;
 import util.Util;
 
+// TODO: PhotonRule を継承させた方が良いかも？;
 public class PhotonUdpRule extends CustomRule {
 
 	// user idx (int16) # packets (int16) request id (int32) session id (int32);
@@ -181,7 +183,7 @@ public class PhotonUdpRule extends CustomRule {
 	}
 	
 	private void getPhotonCore(IntermediateObject packet, byte buffer[], int offset) {
-		PhotonRule rule = RuleFactory.getPhotonRule();
+		PhotonRule rule = (PhotonRule)(createRule(RULE_PHOTON));
 		rule.getPhotonCore(packet, buffer, offset);
 	}
 	
@@ -251,7 +253,7 @@ public class PhotonUdpRule extends CustomRule {
 	// Photon の core 部分の長さのみを返す;
 	// 0 を返せば全体が hex として処理される;
 	private int setPhotonCore(IntermediateObject packet, byte buffer[], int offset) {
-		PhotonRule rule = RuleFactory.getPhotonRule();
+		PhotonRule rule = (PhotonRule)(createRule(RULE_PHOTON));
 		// データの出力が終わったところが返ってくるので、開始位置からの差分を返せば良さそう;
 		return rule.setPhotonCore(packet, buffer, offset) - offset;
 	}

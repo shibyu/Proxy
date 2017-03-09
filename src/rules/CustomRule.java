@@ -5,15 +5,9 @@ import exceptions.*;
 import util.*;
 
 // TODO: 汎用性も今一つだし、そもそもこれが実用に耐えるかも不明なので、適切な抽象化を検討する必要がありそう;
-// TODO: そもそもデータ変換をやりやすくするために、適切な設計を検討する必要がありあそう;
+// TODO: そもそもデータ変換をやりやすくするために、適切な設計を検討する必要がありそう;
 
-public class CustomRule {
-	
-	public static final int DATA_TYPE_NONE = 0;
-	public static final int DATA_TYPE_INT32 = 2;
-	public static final int DATA_TYPE_INT32LE = 3;
-	public static final int DATA_TYPE_INT16 = 4;
-	public static final int DATA_TYPE_INT16LE = 5;
+public class CustomRule extends Rule {
 	
 	private int headerSize;
 	private int lengthOffset;
@@ -35,8 +29,9 @@ public class CustomRule {
 				config.getIntProperty(category, "MagicOffset", true, 0),
 				config.getStringProperty(category, "MagicValue", true, null));
 	}
-	
-	public CustomRule(int headerSize, int lengthOffset, String lengthType, boolean isLengthIncludesHeader, int magicSize, int magicOffset, String magicValue) {
+
+	// 問題なさそうなので、こいつも package private に変更;
+	CustomRule(int headerSize, int lengthOffset, String lengthType, boolean isLengthIncludesHeader, int magicSize, int magicOffset, String magicValue) {
 		this.headerSize = headerSize;
 		this.lengthOffset = lengthOffset;
 		setLengthType(lengthType);
@@ -122,45 +117,12 @@ public class CustomRule {
 	private void fillLength(byte buffer[]) {
 		int offset = getLengthOffset();
 		int length = getProtocolRequiredLength( buffer.length );
-		switch( getLengthType() ) {
-		case DATA_TYPE_INT32:
-			DataIO.writeInt32(buffer, offset, length);
-			break;
-		case DATA_TYPE_INT32LE:
-			DataIO.writeInt32LE(buffer, offset, length);
-			break;
-		case DATA_TYPE_INT16:
-			DataIO.writeInt16(buffer, offset, length);
-			break;
-		case DATA_TYPE_INT16LE:
-			DataIO.writeInt16LE(buffer, offset, length);
-			break;
-		case DATA_TYPE_NONE:
-		default:
-			throw new ImplementationException("unknown data type: " + getLengthType());
-		}
+		writeIntValue(buffer, getLengthType(), offset, length);
 	}
 	
-	public int getContentLength(byte buffer[]) {
+	public int getTotalSize(byte buffer[]) {
 		int offset = getLengthOffset();
-		int length = 0;
-		switch( getLengthType() ) {
-		case DATA_TYPE_INT32:
-			length = DataIO.readInt32(buffer, offset);
-			break;
-		case DATA_TYPE_INT32LE:
-			length = DataIO.readInt32LE(buffer, offset);
-			break;
-		case DATA_TYPE_INT16:
-			length = DataIO.readInt16(buffer, offset);
-			break;
-		case DATA_TYPE_INT16LE:
-			length = DataIO.readInt16LE(buffer, offset);
-			break;
-		case DATA_TYPE_NONE:
-		default:
-			throw new ImplementationException("invalid data type: " + getLengthType());	
-		}
+		int length = readIntValue(buffer, getLengthType(), offset);
 		return getContentLength( length );
 	}
 	

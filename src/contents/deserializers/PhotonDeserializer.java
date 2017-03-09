@@ -1,6 +1,7 @@
 package contents.deserializers;
 
 import static rules.PhotonRule.*;
+import static rules.RuleFactory.*;
 
 import contents.Content;
 import contents.IntermediateObject;
@@ -12,7 +13,7 @@ class PhotonDeserializer implements Deserializer {
 	private PhotonRule rule;
 	
 	PhotonDeserializer() {
-		rule = RuleFactory.getPhotonRule();
+		rule = (PhotonRule)(createRule(RULE_PHOTON));
 	}
 	
 	@Override

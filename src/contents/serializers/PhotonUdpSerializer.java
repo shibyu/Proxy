@@ -1,6 +1,7 @@
 package contents.serializers;
 
 import static rules.PhotonUdpRule.*;
+import static rules.RuleFactory.*;
 
 import contents.Content;
 import contents.IntermediateObject;
@@ -12,7 +13,7 @@ public class PhotonUdpSerializer extends Serializer {
 	private int bufferSize;
 	
 	PhotonUdpSerializer() {
-		rule = RuleFactory.getPhotonUdpRule();
+		rule = (PhotonUdpRule)(createRule(RULE_PHOTON_UDP));
 		bufferSize = 65536;
 	}
 
