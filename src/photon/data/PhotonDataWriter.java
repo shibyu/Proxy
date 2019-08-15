@@ -6,16 +6,14 @@ import java.util.Map;
 
 import exceptions.DataFormatException;
 import exceptions.ImplementationException;
-import util.DataIO;
-import util.Parser;
-import util.Util;
+import util.*;
 
 public class PhotonDataWriter {
 
-	private byte buffer[];
+	private ByteBuffer buffer;
 	private int pointer;
 	
-	public PhotonDataWriter(byte buffer[], int pointer) {
+	public PhotonDataWriter(ByteBuffer buffer, int pointer) {
 		this.buffer = buffer;
 		this.pointer = pointer;
 	}
@@ -43,12 +41,12 @@ public class PhotonDataWriter {
 		}
 	}
 	
-	private void writeByteKey(String key, boolean hasType) {
+	private void writeByteKey(String key, boolean emitType) {
 		if( isByteKey(key) == false ) {
 			throw new ImplementationException(key + " is not ByteKey");
 		}
 		try {
-			if( hasType ) { writeByte(TYPE_BYTE); }
+			if( emitType ) { writeByte(TYPE_BYTE); }
 			writeByte( (Parser.parseByteArray(1, key.substring(PREFIX_BYTE_KEY.length())))[0] );
 		}
 		catch( DataFormatException e ) {
@@ -56,22 +54,22 @@ public class PhotonDataWriter {
 		}		
 	}
 	
-	private void writeIntKey(String key) {
+	private void writeIntKey(String key, boolean emitType) {
 		if( isIntKey(key) == false ) {
 			throw new ImplementationException(key + " is not IntKey");
 		}
-		writeInt( Parser.parseInt(key.substring(PREFIX_INT_KEY.length())) );
+		writeInt( Parser.parseInt(key.substring(PREFIX_INT_KEY.length())), emitType );
 	}
 	
-	private void writeLongKey(String key) {
+	private void writeLongKey(String key, boolean emitType) {
 		if( isLongKey(key) == false ) {
 			throw new ImplementationException(key + " is not LongKey");
 		}
-		writeLong( Parser.parseLong(key.substring(PREFIX_LONG_KEY.length())) );
+		writeLong( Parser.parseLong(key.substring(PREFIX_LONG_KEY.length())), emitType );
 	}
 	
 	private void writeByte(byte value) {
-		buffer[pointer++] = value;
+		buffer.writeByte(pointer++, value);
 	}
 	
 	private boolean isByteKey(String key) {
@@ -92,39 +90,54 @@ public class PhotonDataWriter {
 	}
 	
 	private void writeObject(Object object) {
+		writeObject(object, true);
+	}
+	
+	private void writeObject(Object object, boolean emitType) {
 		if( object == null ) {
 			writeNull();
 		}
 		else if( object instanceof Boolean ) {
-			writeBoolean((Boolean)(object));
+			writeBoolean((Boolean)(object), emitType);
 		}
 		else if( object instanceof Integer ) {
-			writeInt((Integer)(object));
+			writeInt((Integer)(object), emitType);
 		}
 		else if( object instanceof Long ) {
-			writeLong((Long)(object));
+			writeLong((Long)(object), emitType);
 		}
 		else if( object instanceof Float ) {
-			writeFloat((Float)(object));
+			writeFloat((Float)(object), emitType);
 		}
 		else if( object instanceof Double ) {
-			writeDouble((Double)(object));
+			writeDouble((Double)(object), emitType);
 		}
 		else if( object instanceof Byte ) {
 			// TODO: ここにはこない？;
-			writePhotonByte((Byte)(object));
+			writePhotonByte((Byte)(object), emitType);
 		}
 		else if( object instanceof Map ) {
+			if( emitType == false ) {
+				throw new ImplementationException("not implemented: typed map + map value");
+			}
 			writeMap((Map<?, ?>)(object));
 		}
 		else if( object instanceof Object[] ) {
+			if( emitType == false ) {
+				throw new ImplementationException("not implemented: typed map + array value");
+			}
 			writeArray((Object[])(object));
 		}
 		else if( object instanceof String ) {
 			String data = (String)(object);
 			// TODO: ないとは思うが、ByteKey と同じ形の文字列が出てくるとちょっとだけ面倒;
-			if( isByteKey(data) ) { writeByteKey(data, true); }
-			else { writeString(data); }
+			if( isByteKey(data) ) {
+				if( emitType == false ) {
+					throw new ImplementationException("not implemented: typed map + byte key string value");
+				}
+				writeByteKey(data, true);
+			}
+			else { writeString(data, emitType); }
 		}
 		else {
 			throw new ImplementationException("unknown data type: " + object.getClass() + " : " + object);
@@ -135,13 +148,21 @@ public class PhotonDataWriter {
 		writeByte(TYPE_NULL);
 	}
 	
-	private void writeBoolean(boolean value) {
-		writeByte(TYPE_BOOLEAN);
+	private void writeBoolean(boolean value, boolean emitType) {
+		if( emitType ) {
+			writeByte(TYPE_BOOLEAN);
+		}
+		writeBooleanCore(value);
+	}
+	
+	private void writeBooleanCore(boolean value) {
 		writeByte((byte)(value ? 0x01 : 0x00));
 	}
 	
-	private void writeInt(int value) {
-		writeByte(TYPE_INT);
+	private void writeInt(int value, boolean emitType) {
+		if( emitType ) {
+			writeByte(TYPE_INT);
+		}
 		writeInt32(value);
 	}
 	
@@ -150,8 +171,10 @@ public class PhotonDataWriter {
 		pointer += 4;
 	}
 	
-	private void writeLong(long value) {
-		writeByte(TYPE_LONG);
+	private void writeLong(long value, boolean emitType) {
+		if( emitType ) {
+			writeByte(TYPE_LONG);
+		}
 		writeInt64(value);
 	}
 	
@@ -160,8 +183,10 @@ public class PhotonDataWriter {
 		pointer += 8;
 	}
 	
-	private void writeFloat(float value) {
-		writeByte(TYPE_FLOAT);
+	private void writeFloat(float value, boolean emitType) {
+		if( emitType ) {
+			writeByte(TYPE_FLOAT);
+		}
 		writeFloatCore(value);
 	}
 	
@@ -170,8 +195,10 @@ public class PhotonDataWriter {
 		pointer += 4;
 	}
 	
-	private void writeDouble(double value) {
-		writeByte(TYPE_DOUBLE);
+	private void writeDouble(double value, boolean emitType) {
+		if( emitType ) {
+			writeByte(TYPE_DOUBLE);
+		}
 		writeDoubleCore(value);
 	}
 	
@@ -180,24 +207,78 @@ public class PhotonDataWriter {
 		pointer += 8;
 	}
 	
-	private void writePhotonByte(byte value) {
-		writeByte(TYPE_BYTE);
+	private void writePhotonByte(byte value, boolean emitType) {
+		if( emitType ) {
+			writeByte(TYPE_BYTE);
+		}
 		writeByte(value);
 	}
 	
 	// 型情報は落ちてしまっているので ? にしておく;
 	private void writeMap(Map<?, ?> value) {
+		// 元々型情報を持っているっぽいので、そちらにあわせて処理する;
+		if( value.containsKey(KEY_KEY_TYPE) && value.containsKey(KEY_VALUE_TYPE) ) {
+			writeTypedMap(value);
+			return;
+		}
 		writeByte(TYPE_MAP);
 		int length = value.size();
 		writeInt16(length);
 		for( Map.Entry<?, ?> entry : value.entrySet() ) {
 			String key = (String)(entry.getKey());
 			// この関数では key は byte 型か分からないので、型情報を出力する;
-			if( isByteKey(key) ) { writeByteKey(key, true); }
-			else if( isLongKey(key) ) { writeLongKey(key); }
-			else if( isIntKey(key) ) { writeIntKey(key); }
-			else { writeString(key); }
+			writeKey(key, true);
 			writeObject(entry.getValue());
+		}
+	}
+	
+	private void writeTypedMap(Map<?, ?> value) {
+		writeByte(TYPE_TYPED_MAP);
+		int keyType = getTypeFromString((String)(value.remove(KEY_KEY_TYPE)));
+		int valueType = getTypeFromString((String)(value.remove(KEY_VALUE_TYPE)));
+		writeByte((byte)(keyType));
+		writeByte((byte)(valueType));
+		int length = value.size();
+		writeInt16(length);
+		for( Map.Entry<?, ?> entry : value.entrySet() ) {
+			String key = (String)(entry.getKey());
+			// key の型が Object でなければ、既に型情報は出力されているので割愛する;
+			writeKey(key, keyType == 0);
+			writeObject(entry.getValue(), keyType == 0);
+		}
+	}
+	
+	private void writeKey(String key, boolean emitType) {
+		if( isByteKey(key) ) { writeByteKey(key, emitType); }
+		else if( isLongKey(key) ) { writeLongKey(key, emitType); }
+		else if( isIntKey(key) ) { writeIntKey(key, emitType); }
+		else { writeString(key, emitType); }
+	}
+	
+	private int getTypeFromString(String typeString) {
+		if( typeString.equalsIgnoreCase(TYPE_STRING_OBJECT) ) {
+			return 0;
+		}
+		else if( typeString.equalsIgnoreCase(TYPE_STRING_BYTE) ) {
+			return TYPE_BYTE;
+		}
+		else if( typeString.equalsIgnoreCase(TYPE_STRING_INT) ) {
+			return TYPE_INT;
+		}
+		else if( typeString.equalsIgnoreCase(TYPE_STRING_LONG) ) {
+			return TYPE_LONG;
+		}
+		else if( typeString.equalsIgnoreCase(TYPE_STRING_BOOL) ) {
+			return TYPE_BOOLEAN;
+		}
+		else if( typeString.equalsIgnoreCase(TYPE_STRING_FLOAT) ) {
+			return TYPE_FLOAT;
+		}
+		else if( typeString.equalsIgnoreCase(TYPE_STRING_DOUBLE) ) {
+			return TYPE_DOUBLE;
+		}
+		else {
+			throw new ImplementationException("unknown type string: " + typeString);
 		}
 	}
 	
@@ -275,7 +356,7 @@ public class PhotonDataWriter {
 			if( (value instanceof Boolean) == false ) {
 				throw new ImplementationException("type mismatch: boolean required: " + value);
 			}
-			writeBoolean((boolean)(value));
+			writeBooleanCore((boolean)(value));
 		}
 	}
 	
@@ -288,22 +369,29 @@ public class PhotonDataWriter {
 		}
 	}
 	
-	private void writeString(String value) {
+	private void writeString(String value, boolean emitType) {
 		if( value.startsWith(PREFIX_CUSTOM_VALUE) ) {
-			writeCustom(value);
+			writeCustom(value, emitType);
 			return;
 		}
 		if( value.startsWith(PREFIX_BYTE_VALUE) ) {
-			writeByteArray(value);
+			writeByteArray(value, emitType);
 			return;
 		}
-		writeByte(TYPE_STRING);
+		if( emitType ) {
+			writeByte(TYPE_STRING);
+		}
 		writeStringCore(value);
 	}
 	
-	private void writeCustom(String value) {
+	private void writeCustom(String value, boolean emitType) {
 		try {
-			writeByte(TYPE_CUSTOM);
+			if( emitType ) {
+				writeByte(TYPE_CUSTOM);
+			}
+			else {
+				throw new ImplementationException("not implemented: typed map + custom type value");
+			}
 			String parts[] = value.split("_");
 			Util.writeByteArray(buffer, pointer, Parser.parseByteArray(1, parts[1]), 0, 1);
 			++pointer;
@@ -317,9 +405,14 @@ public class PhotonDataWriter {
 		}
 	}
 	
-	private void writeByteArray(String value) {
+	private void writeByteArray(String value, boolean emitType) {
 		try {
-			writeByte(TYPE_BYTE_ARRAY);
+			if( emitType ) {
+				writeByte(TYPE_BYTE_ARRAY);
+			}
+			else {
+				throw new ImplementationException("not implemented: typed map + byte array value");
+			}
 			String content = value.substring(PREFIX_BYTE_VALUE.length());
 			int length = content.length() / 2;
 			writeInt32(length);

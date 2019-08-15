@@ -54,12 +54,14 @@ public class BinaryProcessor extends Processor {
 	
 	private void queueContent() {
 		int length = getContentLength();
-		queueContent( new Content(innerBuffer, 0, length) );
+		Content content = new Content(innerBuffer, 0, length);
+		content.setForceDirect( rule.isForceDirect(content) );
+		queueContent( content );
 	}
 	
 	@Override
 	public void process(byte[] buffer, int offset, int length) throws IOException {
-		
+
 		while( offset < length ) {
 
 			while( state == BINARY_STATE_HEADER && offset < length ) {

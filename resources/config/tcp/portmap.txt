@@ -1,7 +1,15 @@
 Enable:bool:true
-#portmap:map:443=>8888
-portmap:map:80=>8888,443=>8888
+#portmap:map:80=>18888,443=>18888
+portmap:map:443=>8080,80=>8080
+#portmap:map:80=>8888,81=>8888,443=>8888,61614=>8888,10081=>8888
+#portmap:map:443=>penetration-api.mikoto.dev-aktsk.net:443
+#,7060=>164.70.14.43:7060
+#portmap:map:80=>8888,443=>8888,14530=>4530
 #portmap:map:80=>8888,443=>8888,7070=>164.70.14.43:7070
 
-#RequestDebug:csv:80,443,7070
-#ResponseDebug:csv:80,443,7070
+RequestDebug:csv:0
+ResponseDebug:csv:0
+#RequestDebug:csv:443,14530
+#ResponseDebug:csv:443,14530
+#RequestDebug:csv:80,443,7060
+#ResponseDebug:csv:80,443,7060

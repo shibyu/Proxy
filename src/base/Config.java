@@ -313,11 +313,8 @@ public class Config {
 		return getStringProperty(category, KEY_RESPONSE_OUTPUT_TYPE);
 	}
 	
-	public String getRule(String category, int type) {
+	public String getRule(String category) {
 		String rule = getStringProperty(category, KEY_RULE, true, null);
-		if( type != TYPE_UNKNOWN ) {
-			rule += getTypeString(type);
-		}
 		return rule;
 	}
 	

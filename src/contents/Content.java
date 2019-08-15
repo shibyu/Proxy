@@ -10,6 +10,8 @@ public class Content {
 	// TODO: 整理する (拡張としてはかなり雑...);
 	protected boolean RUDPOnly;
 	
+	private boolean isForceDirect;
+
 	// 新規にカスタム Content を作るのもアレなので、追加情報を持てるようにしておく;
 	private Map<String, String> additionalInfo;
 	
@@ -17,6 +19,13 @@ public class Content {
 		this(content, 0, content.length);
 	}
 	
+	public Content(byte content[], int offset, int length) {
+		// 呼び出し元でデータが変更されると困るので複製しておく;
+		this.content = Util.copyByteArray(content, offset, length);
+		additionalInfo = new HashMap<String, String>();
+		isForceDirect = false;
+	}
+
 	public boolean isRUDPOnly() {
 		return RUDPOnly;
 	}
@@ -24,11 +33,13 @@ public class Content {
 	public void setRUDPOnly(boolean RUDPOnly) {
 		this.RUDPOnly = RUDPOnly;
 	}
-
-	public Content(byte content[], int offset, int length) {
-		// 呼び出し元でデータが変更されると困るので複製しておく;
-		this.content = Util.copyByteArray(content, offset, length);
-		additionalInfo = new HashMap<String, String>();
+	
+	public void setForceDirect(boolean isForceDirect) {
+		this.isForceDirect = isForceDirect;
+	}
+	
+	public boolean isForceDirect() {
+		return isForceDirect;
 	}
 
 	public int length() {

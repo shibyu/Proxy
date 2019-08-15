@@ -7,6 +7,7 @@ public class PhotonData {
 	public static final byte TYPE_LONG = 0x6c;
 	public static final byte TYPE_INT = 0x69;
 	public static final byte TYPE_STRING = 0x73;
+	public static final byte TYPE_TYPED_MAP = 0x44;
 	public static final byte TYPE_MAP = 0x68;
 	public static final byte TYPE_FLOAT = 0x66;
 	public static final byte TYPE_DOUBLE = 0x64;
@@ -29,5 +30,16 @@ public class PhotonData {
 	public static final String ARRAY_TYPE_LONG = "LongArray";
 	public static final String ARRAY_TYPE_BOOL = "BoolArray";
 	public static final String ARRAY_TYPE_STRING = "StringArray";
+	
+	public static final String KEY_KEY_TYPE = "__KEY_TYPE__";
+	public static final String KEY_VALUE_TYPE = "__VALUE__TYPE__";
+	
+	public static final String TYPE_STRING_OBJECT = "Object";
+	public static final String TYPE_STRING_BYTE = "Byte";
+	public static final String TYPE_STRING_INT = "Int";
+	public static final String TYPE_STRING_LONG = "Long";
+	public static final String TYPE_STRING_BOOL = "Bool";
+	public static final String TYPE_STRING_FLOAT = "Float";
+	public static final String TYPE_STRING_DOUBLE = "Double";
 
 }

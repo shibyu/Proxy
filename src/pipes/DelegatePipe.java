@@ -140,6 +140,7 @@ public class DelegatePipe extends Pipe implements PushablePipe {
 		}
 	}
 	
+	// proxy に転送したか否かを返却することにする;
 	synchronized public boolean processContent(Content content, String client, int type, boolean ignoreRUDP) throws IOException {
 		this.type = type;
 		//　元が TCP ではないので TaskId を指定せずに別処理に持っていくことにする;
@@ -151,6 +152,11 @@ public class DelegatePipe extends Pipe implements PushablePipe {
 	
 	private boolean processContent(Content content, boolean ignoreRUDP) throws IOException {
 		output("original: " + util.Util.toHexString(content.getBytes()), LOG_RAW_DATA);
+		if( content.isForceDirect() ) {
+			// 特殊な用途で proxy を経由したくない場合には、直接送ってしまう;
+			push(content);
+			return false;
+		}
 		++contentId;
 		if( converter != null ) {
 			content = converter.convert(content);

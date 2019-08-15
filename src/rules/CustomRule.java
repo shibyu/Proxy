@@ -3,6 +3,7 @@ package rules;
 import base.Config;
 import exceptions.*;
 import util.*;
+import contents.Content;
 
 // TODO: 汎用性も今一つだし、そもそもこれが実用に耐えるかも不明なので、適切な抽象化を検討する必要がありそう;
 // TODO: そもそもデータ変換をやりやすくするために、適切な設計を検討する必要がありそう;
@@ -124,6 +125,13 @@ public class CustomRule extends Rule {
 		int offset = getLengthOffset();
 		int length = readIntValue(buffer, getLengthType(), offset);
 		return getContentLength( length );
+	}
+	
+	@Override
+	public boolean isForceDirect(Content content) {
+		// ここでは使用しない;
+		// TODO: 本当は abstract にしたいというか、子クラスで継承させたい;
+		return false;
 	}
 	
 }

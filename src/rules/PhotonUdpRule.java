@@ -2,13 +2,12 @@ package rules;
 
 import static base.LogManager.*;
 import static rules.RuleFactory.*;
+import static base.Constant.*;
 
 import contents.IntermediateObject;
 import exceptions.DataFormatException;
 import exceptions.ImplementationException;
-import util.DataIO;
-import util.Parser;
-import util.Util;
+import util.*;
 
 // TODO: PhotonRule を継承させた方が良いかも？;
 public class PhotonUdpRule extends CustomRule {
@@ -74,7 +73,7 @@ public class PhotonUdpRule extends CustomRule {
 		return DataIO.readInt16(buffer, POS_USER_ID);
 	}
 	
-	public void setUserId(byte buffer[], int userId) {
+	public void setUserId(ByteBuffer buffer, int userId) {
 		DataIO.writeInt16(buffer, POS_USER_ID, userId);
 	}
 	
@@ -82,7 +81,7 @@ public class PhotonUdpRule extends CustomRule {
 		return DataIO.readInt32(buffer, POS_PACKET_TOKEN);
 	}
 	
-	public void setPacketToken(byte buffer[], int packetToken) {
+	public void setPacketToken(ByteBuffer buffer, int packetToken) {
 		DataIO.writeInt32(buffer, POS_PACKET_TOKEN, packetToken);
 	}
 	
@@ -90,7 +89,7 @@ public class PhotonUdpRule extends CustomRule {
 		return DataIO.readInt32(buffer, POS_SESSION_ID);
 	}
 	
-	public void setSessionId(byte buffer[], int sessionId) {
+	public void setSessionId(ByteBuffer buffer, int sessionId) {
 		DataIO.writeInt32(buffer, POS_SESSION_ID, sessionId);
 	}
 	
@@ -98,7 +97,7 @@ public class PhotonUdpRule extends CustomRule {
 		return DataIO.readInt16(buffer, POS_PACKET_COUNT);
 	}
 	
-	private void setPacketCount(byte buffer[], int packetCount) {
+	private void setPacketCount(ByteBuffer buffer, int packetCount) {
 		DataIO.writeInt16(buffer, POS_PACKET_COUNT, packetCount);
 	}
 	
@@ -183,11 +182,11 @@ public class PhotonUdpRule extends CustomRule {
 	}
 	
 	private void getPhotonCore(IntermediateObject packet, byte buffer[], int offset) {
-		PhotonRule rule = (PhotonRule)(createRule(RULE_PHOTON));
+		PhotonRule rule = (PhotonRule)(createRule(RULE_PHOTON, TYPE_UNKNOWN));
 		rule.getPhotonCore(packet, buffer, offset);
 	}
 	
-	public int setPackets(byte buffer[], Object packets[]) {
+	public int setPackets(ByteBuffer buffer, Object packets[]) {
 		// 先に packet 数を更新しておく;
 		setPacketCount(buffer, packets.length);
 		int offset = POS_PACKETS;
@@ -202,7 +201,7 @@ public class PhotonUdpRule extends CustomRule {
 	
 	// 処理した packet のサイズを返却する;
 	// 次にどこから buffer を使って良いかを通知する;
-	private int setPacket(byte buffer[], int offset, IntermediateObject packet) {
+	private int setPacket(ByteBuffer buffer, int offset, IntermediateObject packet) {
 		Util.writeByteArray(buffer, offset + POS_PACKET_HEADER, toBinary(packet.get(KEY_PACKET_HEADER).toString()), 0, PACKET_HEADER_SIZE);
 		DataIO.writeInt32(buffer, offset + POS_PACKET_INDEX, packet.getInt(KEY_PACKET_INDEX));
 		int length = setCustomizedPacket(buffer, offset, packet);
@@ -222,9 +221,9 @@ public class PhotonUdpRule extends CustomRule {
 	}
 	
 	// packet のサイズを返却する;
-	private int setCustomizedPacket(byte buffer[], int offset, IntermediateObject packet) {
+	private int setCustomizedPacket(ByteBuffer buffer, int offset, IntermediateObject packet) {
 		int payloadPosition = POS_PACKET_PAYLOAD;
-		switch( buffer[offset] ) {
+		switch( buffer.getByte(offset) ) {
 		case 0x01:
 			// ACK;
 			DataIO.writeInt32(buffer, offset + POS_ACK_PACKET_INDEX, packet.getInt(KEY_ACK_PACKET_INDEX));
@@ -252,8 +251,8 @@ public class PhotonUdpRule extends CustomRule {
 	
 	// Photon の core 部分の長さのみを返す;
 	// 0 を返せば全体が hex として処理される;
-	private int setPhotonCore(IntermediateObject packet, byte buffer[], int offset) {
-		PhotonRule rule = (PhotonRule)(createRule(RULE_PHOTON));
+	private int setPhotonCore(IntermediateObject packet, ByteBuffer buffer, int offset) {
+		PhotonRule rule = (PhotonRule)(createRule(RULE_PHOTON, TYPE_UNKNOWN));
 		// データの出力が終わったところが返ってくるので、開始位置からの差分を返せば良さそう;
 		return rule.setPhotonCore(packet, buffer, offset) - offset;
 	}

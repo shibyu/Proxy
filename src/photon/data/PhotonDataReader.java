@@ -148,6 +148,21 @@ public class PhotonDataReader {
 		return data[pointer++];
 	}
 	
+	private IntermediateObject readTypedMap() {
+		int keyType = readByte();
+		int valueType = readByte();
+		int length = readInt16();
+		IntermediateObject result = new IntermediateObject();
+		result.put(KEY_KEY_TYPE, getTypeString(keyType));
+		result.put(KEY_VALUE_TYPE, getTypeString(valueType));
+		for( int i = 0; i < length; ++i ) {
+			String key = (keyType == 0 ? readKey() : readKey(keyType));
+			Object value = (valueType == 0 ? readObject() : readObject(valueType));
+			result.put(key, value);
+		}
+		return result;
+	}
+	
 	private IntermediateObject readMap() {
 		int length = readInt16();
 		IntermediateObject result = new IntermediateObject();
@@ -191,8 +206,32 @@ public class PhotonDataReader {
 		return result;
 	}
 	
+	private String getTypeString(int type) {
+		switch( type ) {
+		case 0:
+			return TYPE_STRING_OBJECT;
+		case TYPE_BYTE:
+			return TYPE_STRING_BYTE;
+		case TYPE_INT:
+			return TYPE_STRING_INT;
+		case TYPE_LONG:
+			return TYPE_STRING_LONG;
+		case TYPE_BOOLEAN:
+			return TYPE_STRING_BOOL;
+		case TYPE_FLOAT:
+			return TYPE_STRING_FLOAT;
+		case TYPE_DOUBLE:
+			return TYPE_STRING_DOUBLE;
+		default:
+			throw new ImplementationException("unknown type string: " + type);
+		}
+	}
+	
 	private Object readObject() {
-		int type = readByte();
+		return readObject( readByte() );		
+	}
+	
+	private Object readObject(int type) {
 		switch( type ) {
 		case TYPE_BYTE:
 			// ここで byte を返してしまっても良いのだが、結局 byte 型であることを残さないといけないので、ByteKey にしてしまう;
@@ -214,6 +253,8 @@ public class PhotonDataReader {
 			return readByteArray();
 		case TYPE_ARRAY:
 			return readArray();
+		case TYPE_TYPED_MAP:
+			return readTypedMap();
 		case TYPE_MAP:
 			return readMap();
 		case TYPE_OBJECT_ARRAY:
@@ -229,7 +270,10 @@ public class PhotonDataReader {
 	}
 	
 	private String readKey() {
-		int type = readByte();
+		return readKey( readByte() );
+	}
+	
+	private String readKey(int type) {
 		switch( type ) {
 		case TYPE_BYTE:
 			return createByteKey();

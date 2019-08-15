@@ -1,22 +1,27 @@
 package rules;
 
-import contents.IntermediateObject;
+import static base.Constant.*;
+
+import contents.*;
 import exceptions.ImplementationException;
+import exceptions.UnknownException;
 import photon.data.PhotonDataReader;
 import photon.data.PhotonDataWriter;
-import util.DataIO;
-import util.Util;
+import util.*;
 
 public class PhotonRule extends CustomRule {
 
 	// ?? size (int32) 便宜上ここまでをヘッダにしておく;
 	// 先頭は FB かと思っていたらそうではなかった...;
+	// TODO: F0 のときは size がこないっぽい...;
 	// flag (int16) F3 type (byte) code (byte) ここからは本体扱いで、後ろにいろいろつく;
 	// UDP との兼ね合いで、F3 以降を core として取り扱うのが良さそうな感じになっている;
 	
 	// 先頭の一文字は固定ではなかった...;
 	public static final String KEY_CONST = "Const";
 	private static final int POS_CONST = 0;
+	
+	public static final String KEY_ADHOC = "Adhoc";
 
 	public static final String KEY_FLAG = "Flag";
 	private static final int POS_FLAG = 5;
@@ -48,18 +53,49 @@ public class PhotonRule extends CustomRule {
 	private static final int PROTOCOL_TYPE_RESPONSE = 3;
 	private static final int PROTOCOL_TYPE_EVENT = 4;
 	// TODO: 他のプロトコル種別... (UDP 側ではあるようだが、TCP 側では未確認...);
+	
+	private int type;
 
 	// RuleFactory 経由でのみインスタンス生成することにするので、package private にしておく;
-	PhotonRule() {
+	PhotonRule(int type) {
 		// 0xFB 開始かと思ったらそんなことはなかった...;
 		super(5, 1, "int32", true, 0, 0, "");
+		this.type = type;
+	}
+	
+	@Override
+	public int getTotalSize(byte buffer[]) {
+		if( buffer[0] == (byte)(0xFB) ) {
+			return super.getTotalSize(buffer);
+		}
+		if( buffer[0] == (byte)(0xF0) ) {
+			switch( type ) {
+			case TYPE_REQUEST:
+				return 5;
+			case TYPE_RESPONSE:
+				return 9;
+			default:
+				throw new UnknownException("unknown packet type: " + type);
+			}
+		}
+		throw new ImplementationException("unknown packet type: " + Util.toHexString(buffer, 0, 5));
+	}
+	
+	@Override
+	public boolean isForceDirect(Content content) {
+		byte buffer[] = content.getBytes();
+		// とにかくこのパケットが謎過ぎるので、直接通信にしてしまう;
+		if( buffer[0] == (byte)(0xF0) ) {
+			return true;
+		}
+		return false;
 	}
 	
 	public int getFlag(byte buffer[]) {
 		return (int)(DataIO.readInt16(buffer, POS_FLAG));
 	}
 	
-	public void setFlag(byte buffer[], int value) {
+	public void setFlag(ByteBuffer buffer, int value) {
 		DataIO.writeInt16(buffer, POS_FLAG, value);
 	}
 	
@@ -67,28 +103,40 @@ public class PhotonRule extends CustomRule {
 		return (int)(buffer[POS_CONST]);
 	}
 	
-	public void setConst(byte buffer[], int value) {
-		buffer[POS_CONST] = (byte)(value);
+	public void setConst(ByteBuffer buffer, int value) {
+		buffer.writeByte(POS_CONST, (byte)(value));
 	}
 	
 	public int getMagic(byte buffer[], int offset) {
 		return (int)(buffer[offset + POS_MAGIC]);
 	}
 	
-	public void setMagic(byte buffer[], int offset, int value) {
-		buffer[offset + POS_MAGIC] = (byte)(value);
+	public void setMagic(ByteBuffer buffer, int offset, int value) {
+		buffer.writeByte(offset + POS_MAGIC, (byte)(value));
 	}
 	
 	public int getProtocolType(byte buffer[], int offset) {
-		return (int)(buffer[offset + POS_PROTOCOL_TYPE]);
+		return (int)(buffer[offset +  POS_PROTOCOL_TYPE]);
 	}
 	
-	public void setProtocolType(byte buffer[], int offset, int value) {
-		buffer[offset + POS_PROTOCOL_TYPE] = (byte)(value);
+	public int getProtocolType(ByteBuffer buffer, int offset) {
+		return (int)(buffer.getByte(offset + POS_PROTOCOL_TYPE));
+	}
+	
+	public void setProtocolType(ByteBuffer buffer, int offset, int value) {
+		buffer.writeByte(offset + POS_PROTOCOL_TYPE, (byte)(value));
 	}
 	
 	public boolean hasResponseCode(byte buffer[], int offset) {
-		switch( getProtocolType(buffer, offset) ) {
+		return hasResponseCode(getProtocolType(buffer, offset));
+	}
+	
+	public boolean hasResponseCode(ByteBuffer buffer, int offset) {
+		return hasResponseCode(getProtocolType(buffer, offset));
+	}
+	
+	private boolean hasResponseCode(int type) {
+		switch( type ) {
 		case PROTOCOL_TYPE_RESPONSE:
 			return true;
 		case PROTOCOL_TYPE_REQUEST:
@@ -102,8 +150,8 @@ public class PhotonRule extends CustomRule {
 		return (int)(buffer[offset + POS_OPERATION_CODE]);
 	}
 	
-	public void setOperationCode(byte buffer[], int offset, int value) {
-		buffer[offset + POS_OPERATION_CODE] = (byte)(value);
+	public void setOperationCode(ByteBuffer buffer, int offset, int value) {
+		buffer.writeByte(offset + POS_OPERATION_CODE, (byte)(value));
 	}
 	
 	public int getResponseCode(byte buffer[], int offset) {
@@ -115,7 +163,7 @@ public class PhotonRule extends CustomRule {
 		}
 	}
 	
-	public void setResponseCode(byte buffer[], int offset, int value) {
+	public void setResponseCode(ByteBuffer buffer, int offset, int value) {
 		if( hasResponseCode(buffer, offset) ) {
 			DataIO.writeInt16(buffer, offset + POS_RESPONSE_CODE, value);
 			// この後に error message を出力する必要があるが、可変長のため、setContent の中でやる;
@@ -145,7 +193,7 @@ public class PhotonRule extends CustomRule {
 		return reader.readContent();
 	}
 	
-	public int setContent(byte buffer[], int offset, Object object, Object errorMessage) {
+	public int setContent(ByteBuffer buffer, int offset, Object object, Object errorMessage) {
 		switch( getProtocolType(buffer, offset) ) {
 		case PROTOCOL_TYPE_RESPONSE:
 		{
@@ -185,7 +233,7 @@ public class PhotonRule extends CustomRule {
 		object.put(KEY_CONTENT, data);
 	}
 	
-	public int setPhotonCore(IntermediateObject object, byte buffer[], int offset) {
+	public int setPhotonCore(IntermediateObject object, ByteBuffer buffer, int offset) {
 		setMagic(buffer, offset, object.getInt(KEY_MAGIC));
 		setProtocolType(buffer, offset, object.getInt(KEY_PROTOCOL_TYPE));
 		setOperationCode(buffer, offset, object.getInt(KEY_OPERATION_CODE));
