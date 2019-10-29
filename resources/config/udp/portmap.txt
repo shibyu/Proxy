@@ -1,3 +1,4 @@
 Enable:bool:true
 BufferSize:int:65536
-portmap:map:45055=>5055,8060=>164.70.14.43:8060
+portmap:map::
+#portmap:map:45055=>5055,8060=>164.70.14.43:8060

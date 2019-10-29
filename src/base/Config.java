@@ -12,8 +12,8 @@ import contents.DataConverter;
 
 public class Config {
 	
-	public static Config tcpConfig = new Config("../resources/config/tcp");
-	public static Config udpConfig = new Config("../resources/config/udp");
+	public static Config tcpConfig = new Config("../../resources/config/tcp");
+	public static Config udpConfig = new Config("../../resources/config/udp");
 
 	public static final String CATEGORY_BASE = "base";
 	public static final String CATEGORY_ECHO = "echo";
