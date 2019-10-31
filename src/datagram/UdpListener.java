@@ -45,7 +45,7 @@ abstract public class UdpListener extends Thread {
 	
 	public int getListenerId() { return listenerId; }
 	
-	// 接続元情報から、接続先情報を拾ってくる (適切に再利用する);
+	//c 接続元情報から、接続先情報を拾ってくる (適切に再利用する);
 	synchronized protected UdpPeer getPeer(SocketAddress clientAddress) {
 		String client = clientAddress.toString();
 		if( connections.containsKey(client) == false ) {
@@ -56,12 +56,12 @@ abstract public class UdpListener extends Thread {
 		return connections.get(client);
 	}
 
-	// 新規に登録する必要のないコンテキストでのみ実行される前提;
+	//c 新規に登録する必要のないコンテキストでのみ実行される前提;
 	synchronized protected UdpPeer getPeer(String client) {
 		return connections.get(client);
 	}
 	
-	// 接続が切れたか分からないので、一定時間を経過した peer は切ってしまう;
+	//c 接続が切れたか分からないので、一定時間を経過した peer は切ってしまう;
 	synchronized public int cleanup() {
 		int cleanupCount = 0;
 		for( Entry<String, UdpPeer> pair : connections.entrySet() ) {

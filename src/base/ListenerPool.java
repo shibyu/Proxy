@@ -16,10 +16,12 @@ import java.io.*;
 import util.Parser;
 import util.Host;
 
-// tcp については connection の概念があるので、Channel を使って管理する;
-// udp についても Channel を使用すること自体は可能だが、connection の概念がなく、それを実装するようにしないといけない;
-// 結果的に Task クラスと同じレイヤーの作業が必要になりそうなので、Channel を使用するメリットがなくなりそう;
-// 適切に sleep を入れながら (non-blocking になるように) 実装すれば問題ないはずなので、スレッドだらけになるけれども、そちらで進めてみる;
+//c tcp については connection の概念があるので、Channel を使って管理する;
+//c udp についても Channel を使用すること自体は可能だが、connection の概念がなく、それを実装するようにしないといけない;
+//c 結果的に Task クラスと同じレイヤーの作業が必要になりそうなので、Channel を使用するメリットがなくなりそう;
+//c 適切に sleep を入れながら (non-blocking になるように) 実装すれば問題ないはずなので、スレッドだらけになるけれども、そちらで進めてみる;
+
+//c DNS は基本的には UDP の port map なのだが、該当する HOST の場合は自分で返信したいので、その辺だけ適宜処理する必要がありそう;
 
 public class ListenerPool {
 
@@ -51,7 +53,7 @@ public class ListenerPool {
 		return true;
 	}
 
-	// ここでは tcp と統一しているが、内部的には全然別物だし、以降の処理でもインタフェースが同じになることはなさそう;
+	//c ここでは tcp と統一しているが、内部的には全然別物だし、以降の処理でもインタフェースが同じになることはなさそう;
 	private boolean udpRegister(UdpListener udpListener) {
 		if( udpListener.register() == false ) { return false; }
 		int id = ++udpListenerCount;
@@ -69,7 +71,7 @@ public class ListenerPool {
 	private void setupTcpChannels() {
 		tcpChannels = new HashMap<Integer, TcpChannel>();
 		if( tcpRegister( AdminChannel.getInstance() ) == false ) {
-			// 管理用 Channel が登録できないとかは異常なので、強制終了させてしまおう;
+			//c 管理用 Channel が登録できないとかは異常なので、強制終了させてしまおう;
 			fatal("failed to setup AdminListener");
 			System.exit(0);
 		}
@@ -90,10 +92,19 @@ public class ListenerPool {
 	private void setupUdpListeners() {
 		udpListeners = new HashMap<Integer, UdpListener>();
 		udpListenerCount = 0;
+		setupDns();
 		setupUdpPortMap();
 		setupHttpWrapper();
 	}
 
+	// DNS のプロキシをする;
+	private void setupDns() {
+		if( udpConfig.isEnable(CATEGORY_DNS) == false ) {
+			return;
+		}
+		udpRegister( new DnsListener() );
+	}
+	
 	// port map といいつつトンネルにも使える...かも;
 	private void setupTcpPortMap() {
 		Map<?, ?> mapping = tcpConfig.getMapProperty(CATEGORY_PORTMAP, "portmap");
@@ -167,7 +178,7 @@ public class ListenerPool {
 				Iterator<SelectionKey> selected = selector.selectedKeys().iterator();
 				while (selected.hasNext()) {
 					SelectionKey key = selected.next();
-					// 作業したので削除することにより、作業済みであることを示す (そうしないといつまでも作業してくれと言われて無限ループする);
+					//c 作業したので削除することにより、作業済みであることを示す (そうしないといつまでも作業してくれと言われて無限ループする);
 					selected.remove();
 					if (key.isAcceptable()) {
 						SelectableChannel channel = key.channel();
@@ -176,12 +187,12 @@ public class ListenerPool {
 							tcpChannels.get(port).accept();
 						}
 						else {
-							// ここにはこないはずだが...;
+							//c ここにはこないはずだが...;
 							throw new ImplementationException("unknown acceptable channel type: " + channel);
 						}
 					}
 					else {
-						// こないはず...;
+						//c こないはず...;
 						throw new ImplementationException("unknown operatable selection key: " + key);
 					}
 				}

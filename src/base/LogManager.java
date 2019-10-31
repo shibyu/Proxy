@@ -14,6 +14,10 @@ public class LogManager {
 	public static final int OUTPUT_WARNING = 20;
 	public static final int OUTPUT_ERROR = 30;
 	public static final int OUTPUT_FATAL = 40;
+	//c debug の場合は何でもかんでも出力してしまおう;
+	public static final int OUTPUT_DEBUG = 50;
+	//c 常に出力したいものもあってもいいかな？;
+	public static final int OUTPUT_ALWAYS = 100;
 
 	public static final String LOG_LISTEN = "Listen";
 	public static final String LOG_TASK = "Task";
@@ -30,13 +34,13 @@ public class LogManager {
 			stdout = new PrintStream(System.out, true, "UTF-8");
 		}
 		catch( UnsupportedEncodingException e ) {
-			// ここでお亡くなりになられるとどうしようもないので、エラー出力を使う;
+			//c ここでお亡くなりになられるとどうしようもないので、エラー出力を使う;
 			e.printStackTrace(System.err);
 		}
 	}
 	
 	public static void setup() {
-		self.outputLevel = tcpConfig.getIntProperty("OutputLevel");		
+		self.outputLevel = tcpConfig.getLogLevel();
 	}
 	
 	public static void trace(String message) {

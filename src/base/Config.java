@@ -26,9 +26,11 @@ public class Config {
 	private static final String CATEGORY_MASTER = "master";
 	public static final String CATEGOLY_LOG = "log";
 	public static final String CATEGORY_CLIENT = "client";
+	public static final String CATEGORY_DNS = "dns";
 	
 	private static final String KEY_PORT = "ListenPort";
 	private static final String KEY_HOST = "Host";
+	public static final String KEY_HOSTS = "Hosts";
 	private static final String KEY_HOST_PORT = "HostPort";
 	private static final String KEY_BUFFER_SIZE = "BufferSize";
 	private static final String KEY_ENABLE = "Enable";
@@ -42,6 +44,7 @@ public class Config {
 	private static final String KEY_REQUEST_FORMAT = "RequestFormat";
 	private static final String KEY_RESPONSE_FORMAT = "ResponseFormat";
 	private static final String KEY_ORIGINAL_FORMAT = "OriginalFormat";
+	public static final String KEY_PROXY = "Proxy";
 	private static final String KEY_PROXY_FORMAT = "ProxyFormat";
 	public static final String KEY_MASTER = "Master";
 	private static final String KEY_REQUEST_SLAVE_PORT = "RequestSlavePort";
@@ -54,6 +57,9 @@ public class Config {
 	private static final String KEY_KEEP_ALIVE= "KeepAlive";
 	private static final String KEY_REQUEST_DEBUG = "RequestDebug";
 	private static final String KEY_RESPONSE_DEBUG = "ResponseDebug";
+	public static final String KEY_DEBUG = "Debug";
+	public static final String KEY_ORIGIN = "Origin";
+	private static final String KEY_LOG_LEVEL = "OutputLevel";
 	
 	public Config(String path) {
 		rawConfig = new HashMap<String, Map<String, Object>>();
@@ -338,14 +344,18 @@ public class Config {
 		return getStringProperty(category, KEY_PROXY_FORMAT, true, null);
 	}
 	
+	public int getLogLevel() {
+		return getIntProperty(CATEGORY_BASE, KEY_LOG_LEVEL);
+	}
+	
 	public int getTimeout() {
 		return getTimeout(CATEGORY_BASE);
 	}
 	
 	public int getTimeout(String category) {
-		// タイムアウトの場合はデフォルト値が存在する;
-		// 0  はタイムアウトを設定しないことを意味する;
-		// セットする必要性を感じなくなってきた...;
+		//c タイムアウトの場合はデフォルト値が存在する;
+		//c 0  はタイムアウトを設定しないことを意味する;
+		//c セットする必要性を感じなくなってきた...;
 		return getIntProperty(category, KEY_TIMEOUT, true, 0);
 	}
 	
@@ -362,8 +372,8 @@ public class Config {
 		return getBoolProperty(category, KEY_KEEP_ALIVE, true, false);
 	}
 	
-	// 一回 Object に入れてしまっているので、元の型情報が拾えない模様...;
-	// これは仕方ないのか？でもひどい...;
+	//c 一回 Object に入れてしまっているので、元の型情報が拾えない模様...;
+	//c これは仕方ないのか？でもひどい...;
 	public Map<?, ?> getMapProperty(String category, String key) {
 		try {
 			return (Map<?, ?>)(rawConfig.get(category).get(key));
@@ -431,7 +441,7 @@ public class Config {
 
 	private boolean isContain(String category, String key, int value) {
 		List<?> list = getListProperty(category, key);
-		// そもそもそんな Config がない場合...;
+		//c そもそもそんな Config がない場合...;
 		if( list == null ) { return false; }
 		for( Object data : list ) {
 			if( Parser.parseInt(data.toString()) == value ) { return true; }

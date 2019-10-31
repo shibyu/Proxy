@@ -38,8 +38,8 @@ public class AdminTask extends Task {
 					if( command.equalsIgnoreCase("shutdown") ) {
 						clientOutput.write("bye".getBytes());
 						lineBreak();
-						// TODO: リソースとかの解放を真面目にやる;
-						// どちらかというと中途半端な状態で close してまずいものがないようにしたい;
+						//c TODO: リソースとかの解放を真面目にやる;
+						//c どちらかというと中途半端な状態で close してまずいものがないようにしたい;
 						System.exit(0);
 					}
 					else if( command.equalsIgnoreCase("stat") ) {

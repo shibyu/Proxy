@@ -7,15 +7,17 @@ import java.io.IOException;
 
 import clients.*;
 
-// 設計方針メモ;
-// port と Task を mapping して管理する感じにしたい;
-// 一つのサービスで複数の port を listen する;
-// port ごとに thread を立てることにした;
+//c 設計方針メモ;
+//c port と Task を mapping して管理する感じにしたい;
+//c 一つのサービスで複数の port を listen する;
+//c port ごとに thread を立てることにした;
 
 public class Proxy {
 
 	public static void main(String args[]) {
-		// ダミークライアントを起動するための仮実装;
+		// instance 生成が終わってからやりたいので、今なら大丈夫なはず...;
+		LogManager.setup();
+		//c ダミークライアントを起動するための仮実装;
 		for( String arg : args ) {
 			if( arg.equalsIgnoreCase("admin") ) {
 				TcpClient text = new TextClient(CATEGORY_ADMIN);

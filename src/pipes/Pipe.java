@@ -65,7 +65,7 @@ abstract public class Pipe extends Thread {
 	}
 	
 	protected void debug(Exception e) {
-		// まとめて出力しないと割り込まれてしまうので...;
+		//c まとめて出力しないと割り込まれてしまうので...;
 		StringBuilder message = new StringBuilder();
 		message.append("---- error ----\n");
 		if( owner != null ) {
@@ -80,8 +80,8 @@ abstract public class Pipe extends Thread {
 	
 	// input の読み込みを停止させる;
 	public void terminate() {
-		// Socket の読み込みに timeout が設定されている場合に限られるが、そのタイミングで終了するようにする;
-		// なのでちょっと待てば (join すれば) そのうち終わるはず;
+		//c Socket の読み込みに timeout が設定されている場合に限られるが、そのタイミングで終了するようにする;
+		//c なのでちょっと待てば (join すれば) そのうち終わるはず;
 		controller.disable();
 	}
 	

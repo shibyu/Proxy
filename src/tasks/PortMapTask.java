@@ -32,20 +32,20 @@ public class PortMapTask extends Task {
 	@Override
 	public void execute() {
 
-		// 中身を見るか、何も考えずに 2スレッドで動かすか;
-		// HTTP の場合、中身を厳密に見るべきだが、本来の目的が HTTP Proxy を作ることではないので、簡易にしたい;
-		// C in => S out に改変可能に流すのと S in => C out に改変可能に流すのを作るのが良さそう;
-		// 解決: これは port の mapping を行うだけなので、中身は見ないで転送するだけ;
+		//c 中身を見るか、何も考えずに 2スレッドで動かすか;
+		//c HTTP の場合、中身を厳密に見るべきだが、本来の目的が HTTP Proxy を作ることではないので、簡易にしたい;
+		//c C in => S out に改変可能に流すのと S in => C out に改変可能に流すのを作るのが良さそう;
+		//c 解決: これは port の mapping を行うだけなので、中身は見ないで転送するだけ;
 
 		Socket socket = null;
 
 		try {
 			
-			// DONE: remote host への port mapping を実現;
-			// とはいえ、HTTP みたいな Host 情報の乗っているプロトコルでは、挙動がおかしくなるっぽい;
-			// クライアント側で map されていることを認識していないとダメっぽい;
-			// それだとどうなるのやら...だが;
-			// TODO: remote host の場合は別クラスにした方が良いのかも？;
+			//c DONE: remote host への port mapping を実現;
+			//c とはいえ、HTTP みたいな Host 情報の乗っているプロトコルでは、挙動がおかしくなるっぽい;
+			//c クライアント側で map されていることを認識していないとダメっぽい;
+			//c それだとどうなるのやら...だが;
+			//c TODO: remote host の場合は別クラスにした方が良いのかも？;
 			socket = SocketManager.tcpConnect(target);
 			if( socket == null ) { return; }
 			
@@ -78,7 +78,7 @@ public class PortMapTask extends Task {
 		}
 
 		finally {
-			// 自分のもらった Socket は基底クラスで閉じてもらえるので、自分で作ったものだけ閉じておく;
+			//c 自分のもらった Socket は基底クラスで閉じてもらえるので、自分で作ったものだけ閉じておく;
 			SocketManager.close(socket);
 		}
 

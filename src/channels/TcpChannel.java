@@ -15,8 +15,8 @@ import java.nio.channels.*;
 
 abstract public class TcpChannel {
 	
-	// TODO: wrap したというのに内部オブジェクトを外から触らせてしまっているので、本当は継承にした方が良さそうな気がする;
-	// とはいえインスタンス生成が static メソッドを呼び出す感じなので、継承にするとその辺りが良く分からなく...;
+	//c TODO: wrap したというのに内部オブジェクトを外から触らせてしまっているので、本当は継承にした方が良さそうな気がする;
+	//c とはいえインスタンス生成が static メソッドを呼び出す感じなので、継承にするとその辺りが良く分からなく...;
 	protected ServerSocketChannel listenChannel;
 	protected String category;
 
@@ -69,25 +69,25 @@ abstract public class TcpChannel {
 	public void accept() {
 
 		try {
-			// この Socket は使用が終わったところで閉じる必要がある;
-			// Task は別スレッドになっているので、そちらの終了時に必ず閉じるようにする;
+			//c この Socket は使用が終わったところで閉じる必要がある;
+			//c Task は別スレッドになっているので、そちらの終了時に必ず閉じるようにする;
 			SocketChannel clientConnection = listenChannel.accept();
 			String remote = clientConnection.getRemoteAddress().toString();
-			// なぜか / で始まるらしいので削っておく...;
+			//c なぜか / で始まるらしいので削っておく...;
 			if( remote.startsWith("/") ) { remote = remote.substring("/".length()); }
 			if( isAcceptableRemoteHost(remote) == false ) {
 				output("connection refused: " + remote, LOG_CONNECT);
-				// 担当するタスクがいないので、ここで閉じる;
-				// close するためのダミータスクを作っても良いが、さすがに健全な実装ではない気がするのでこのままにしておく;
+				//c 担当するタスクがいないので、ここで閉じる;
+				//c close するためのダミータスクを作っても良いが、さすがに健全な実装ではない気がするのでこのままにしておく;
 				SocketManager.close(clientConnection);
 				return;
 			}
 			output("connected: " + clientConnection, LOG_CONNECT);
 			Task task = createTask(clientConnection);
 			if( TaskPool.getInstance().addTask(task) == false ) {
-				// TODO: 503 service temporary unavailable;
+				//c TODO: 503 service temporary unavailable;
 				error("Service Temporary Unavailable: too many connections");
-				// 開始できなかったので、タスクを終了させる;
+				//c 開始できなかったので、タスクを終了させる;
 				task.finish();
 				return;
 			}

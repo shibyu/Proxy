@@ -25,10 +25,10 @@ public abstract class Task extends Thread {
 		this(clientConnection, category, false);
 	}
 	
-	// 基本的に Task は TCP でしか作らないので TCP の設定を見れば良かったのだが、UDP を wrap し始めたので、設定が混在している;
-	// そのフラグ管理が SlaveTask では必要なのだが、先にこちらのインスタンスが作られてしまうため、そのフラグに綺麗にアクセスできない;
-	// ということで、設定に関する部分をスキップできるようにフラグを導入した...;
-	// TODO: 明らかにひどい実装なので、そのうち見直したい...;
+	//c 基本的に Task は TCP でしか作らないので TCP の設定を見れば良かったのだが、UDP を wrap し始めたので、設定が混在している;
+	//c そのフラグ管理が SlaveTask では必要なのだが、先にこちらのインスタンスが作られてしまうため、そのフラグに綺麗にアクセスできない;
+	//c ということで、設定に関する部分をスキップできるようにフラグを導入した...;
+	//c TODO: 明らかにひどい実装なので、そのうち見直したい...;
 	public Task(SocketChannel clientConnection, String category, boolean skipSetBufferSize) throws IOException {
 		this.clientConnection = clientConnection;
 		// time out の指定は必須;

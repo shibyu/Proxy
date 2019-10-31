@@ -7,6 +7,24 @@ import exceptions.ImplementationException;
 
 public class Util {
 	
+	public static String toBinaryString(byte data[]) {
+		return toBinaryString(data, 0, data.length);
+	}
+	
+	public static String toBinaryString(byte data[], int offset, int length) {
+		StringBuilder builder = new StringBuilder();
+		for( int i = 0; i < length; ++i ) {
+			if( offset + i < 0 ) { continue; }
+			if( offset + i >= data.length ) { break; }
+			byte val = data[offset + i];
+			for( int j = 7; j >= 0; --j ) {
+				builder.append(((val >> j) & 1) == 0 ? '0' : '1');
+			}
+			builder.append(' ');
+		}
+		return builder.toString();
+	}
+	
 	public static String toHexString(byte data[]) {
 		return toHexString(data, 0, data.length);
 	}
@@ -18,6 +36,8 @@ public class Util {
 	public static String toHexString(byte data[], int offset, int length, int sep) {
 		StringBuilder builder = new StringBuilder();
 		for(int i=0; i<length; ++i) {
+			if( offset + i < 0 ) { continue; }
+			if( offset + i >= data.length ) { break; }
 			byte val = data[offset + i];
 			builder.append(toHex((val >> 4) & 0x0F)).append(toHex(val & 0x0F));
 			if( sep > 0 && (i + 1) % sep == 0 ) {

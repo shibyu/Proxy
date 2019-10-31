@@ -9,7 +9,7 @@ import java.nio.channels.*;
 import tasks.*;
 import util.Host;
 
-// リクエストを別のポートに転送する;
+//c リクエストを別のポートに転送する;
 
 public class PortMapChannel extends TcpChannel {
 
