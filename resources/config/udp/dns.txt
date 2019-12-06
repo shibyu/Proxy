@@ -1,6 +1,6 @@
 Enable:bool:true
 ListenPort:int:53
-Hosts:csv:close-happy.dqx.jp
+Hosts:csv:close-happy.dqx.jp,penetration-api.mikoto-gl-dev.aktsk.com,close-casino.happy.dqx.jp,close-game.happy.dqx.jp
 Origin:string:8.8.8.8
 Proxy:string:192.168.11.111
 Debug:bool:false

@@ -23,6 +23,7 @@ public class LogManager {
 	public static final String LOG_TASK = "Task";
 	public static final String LOG_CONNECT = "Connection";
 	public static final String LOG_RAW_DATA = "RawData";
+	public static final String LOG_DNS = "DNS";
 	
 	// singleton;
 	private static final LogManager self = new LogManager();

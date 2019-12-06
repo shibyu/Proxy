@@ -18,8 +18,6 @@ public class DnsListener extends UdpListener {
 	private static final int DEFAULT_PORT = 53;
 	
 	private List<?> hosts;
-	private boolean isDebug;
-	private int logLevel;
 	
 	private String proxy;
 	
@@ -30,8 +28,6 @@ public class DnsListener extends UdpListener {
 	public DnsListener() {
 		super(CATEGORY_DNS);
 		hosts = udpConfig.getListProperty(CATEGORY_DNS, KEY_HOSTS);
-		isDebug = udpConfig.getBoolProperty(CATEGORY_DNS, KEY_DEBUG);
-		logLevel = isDebug ? LogManager.OUTPUT_DEBUG : LogManager.OUTPUT_TRACE;
 		originServer = new InetSocketAddress(udpConfig.getStringProperty(CATEGORY_DNS, KEY_ORIGIN), DEFAULT_PORT);
 		requests = new HashSet<String>();
 		proxy = udpConfig.getStringProperty(CATEGORY_DNS, KEY_PROXY);
@@ -67,7 +63,7 @@ public class DnsListener extends UdpListener {
 	}
 	
 	private void log(String message) {
-		LogManager.output(message, logLevel);
+		LogManager.output(message, LogManager.LOG_DNS);
 	}
 	
 	private DatagramPacket modifyPacket(DatagramPacket packet, int index) {

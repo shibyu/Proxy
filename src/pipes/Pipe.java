@@ -26,7 +26,7 @@ abstract public class Pipe extends Thread {
 	public Pipe(Task owner, InputStream input, OutputStream output, int bufferSize) {
 		this.owner = owner;
 		if( bufferSize == 0 ) {
-			// 設定だけの問題ではない可能性があるので、実装エラーにしておく;
+			//c 設定だけの問題ではない可能性があるので、実装エラーにしておく;
 			throw new ImplementationException("bufferSize should not be 0");
 		}
 		this.bufferSize = bufferSize;
@@ -75,7 +75,7 @@ abstract public class Pipe extends Thread {
 		message.append(e.getMessage() + "\n");
 		message.append("processed " + contentId + " contents\n");
 		message.append("---- ----- ----");
-		output(message.toString(), 10);
+		output(message.toString(), LOG_CONNECT);
 	}
 	
 	// input の読み込みを停止させる;
